@@ -3,16 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CaeleFly — Создание, анализ и загрузка миссий в DJI FLY</title>
-    <meta name="description" content="CaeleFly — десктопное приложение для планирования полётных заданий DJI FLY, анализа аэрофотосъёмки.">
+    <title>CaeleFly — Создание, анализ и загрузка миссий для DJI FLY</title>
+    <meta name="description" content="CaeleFly — десктопное приложение для планирования полётных заданий DJI FLY и анализа аэрофотосъёмки.">
 
-    <!-- Open Graph -->
     <meta property="og:title" content="CaeleFly — Планировщик миссий БПЛА">
     <meta property="og:description" content="Инструмент для операторов БПЛА: планирование маршрутов, учёт рельефа, анализ перекрытий, интеграция с DJI FLY">
     <meta property="og:type" content="website">
     <meta property="og:image" content="icon.png">
 
-    <!-- Иконка вкладки браузера -->
     <link rel="icon" type="image/x-icon" href="icon.ico">
 
     <style>
@@ -57,11 +55,84 @@
         .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px; max-width: 1200px; margin: 0 auto; }
         .screenshot-item { border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease; cursor: pointer; background: #10141c; }
-        .screenshot-item:hover { transform: scale(1.02); border-color: #00a8ff; }
+            transition: all 0.3s ease; cursor: zoom-in; background: #10141c; position: relative; }
+        .screenshot-item:hover { transform: scale(1.02); border-color: #00a8ff;
+            box-shadow: 0 8px 24px rgba(0, 168, 255, 0.25); }
         .screenshot-item img { width: 100%; height: 220px; object-fit: cover; display: block; }
+        .screenshot-item::after {
+            content: "🔍"; position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.6); color: white; width: 32px; height: 32px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; opacity: 0; transition: opacity 0.25s; pointer-events: none;
+        }
+        .screenshot-item:hover::after { opacity: 1; }
         .screenshot-caption { padding: 12px; background: rgba(0, 0, 0, 0.5); text-align: center;
             font-size: 0.9em; color: #a0a0aa; }
+
+        /* ================= ЛАЙТБОКС ================= */
+        .lightbox {
+            position: fixed; inset: 0; z-index: 10000;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.25s ease;
+        }
+        .lightbox.active { display: flex; opacity: 1; }
+        .lightbox-content {
+            position: relative; max-width: 92vw;
+            display: flex; flex-direction: column; align-items: center;
+            transform: scale(0.95); transition: transform 0.25s ease;
+        }
+        .lightbox.active .lightbox-content { transform: scale(1); }
+        /* Обёртка картинки с overflow hidden — чтобы зум не вылезал за рамки */
+        .lightbox-img-wrap {
+            max-width: 92vw; max-height: 78vh; overflow: hidden;
+            border-radius: 10px; background: #0d1117;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .lightbox-img {
+            max-width: 92vw; max-height: 78vh;
+            object-fit: contain; display: block;
+            cursor: zoom-in;
+            transition: transform 0.25s ease;
+            transform-origin: center center;
+            will-change: transform;
+        }
+        .lightbox-img.zoomed { cursor: grab; }
+        .lightbox-img.zoomed.dragging { cursor: grabbing; transition: none; }
+        .lightbox-caption {
+            margin-top: 14px; color: #e6e6eb; font-size: 1em;
+            text-align: center; max-width: 90vw;
+        }
+        .lightbox-hint {
+            margin-top: 6px; color: #666; font-size: 0.8em; text-align: center;
+        }
+        .lightbox-counter {
+            position: absolute; top: 16px; left: 20px;
+            color: rgba(255,255,255,0.7); font-size: 0.95em;
+            background: rgba(255,255,255,0.08); padding: 6px 14px;
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
+        }
+        .lightbox-close, .lightbox-prev, .lightbox-next {
+            position: absolute; background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2); color: white;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; cursor: pointer; transition: all 0.2s ease;
+            user-select: none;
+        }
+        .lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
+            background: #00a8ff; border-color: #00a8ff; transform: scale(1.08);
+        }
+        .lightbox-close { top: 16px; right: 20px; }
+        .lightbox-prev { left: 20px; top: 50%; transform: translateY(-50%); }
+        .lightbox-next { right: 20px; top: 50%; transform: translateY(-50%); }
+        .lightbox-prev:hover { transform: translateY(-50%) scale(1.08); }
+        .lightbox-next:hover { transform: translateY(-50%) scale(1.08); }
+
+        body.lb-open { overflow: hidden; }
+
         .tech-stack { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
             max-width: 900px; margin: 0 auto; }
         .tech-badge { background: rgba(0, 120, 212, 0.15); border: 1px solid rgba(0, 120, 212, 0.3);
@@ -84,6 +155,9 @@
             .hero-icon { width: 140px; height: 140px; }
             .section-title { font-size: 1.8em; } .buttons { flex-direction: column; }
             .btn { width: 100%; justify-content: center; }
+            .lightbox-prev { left: 8px; width: 38px; height: 38px; font-size: 18px; }
+            .lightbox-next { right: 8px; width: 38px; height: 38px; font-size: 18px; }
+            .lightbox-close { top: 10px; right: 10px; width: 38px; height: 38px; }
         }
     </style>
 </head>
@@ -94,8 +168,8 @@
         </div>
         <h1>CaeleFly</h1>
         <p class="subtitle">
-            Профессиональное десктопное приложение для планирования миссий БПЛА,
-            анализа аэрофотосъёмки и работы с цифровыми моделями рельефа
+            Десктопное приложение для планирования миссий DJI FLY
+            и анализа аэрофотосъёмки.
         </p>
         <div class="version-badge">Версия 1.3.0.0</div>
         <div class="buttons">
@@ -124,29 +198,29 @@
     <section class="section screenshots">
         <div class="container">
             <h2 class="section-title">Интерфейс приложения</h2>
-            <div class="screenshot-grid">
+            <div class="screenshot-grid" id="screenshotGrid">
                 <div class="screenshot-item">
-                    <img src="screenshots/map-view.JPG" alt="Карта с маршрутом" onerror="console.warn('Не найден: '+this.src)">
+                    <img src="screenshots/map-view.JPG" alt="Интерактивная карта с маршрутом">
                     <div class="screenshot-caption">Интерактивная карта с маршрутом</div>
                 </div>
                 <div class="screenshot-item">
-                    <img src="screenshots/overlap-analysis.JPG" alt="Анализ перекрытий" onerror="console.warn('Не найден: '+this.src)">
+                    <img src="screenshots/overlap-analysis.JPG" alt="Анализ перекрытий снимков">
                     <div class="screenshot-caption">Анализ перекрытий снимков</div>
                 </div>
                 <div class="screenshot-item">
-                    <img src="screenshots/3d-profile.JPG" alt="3D профиль" onerror="console.warn('Не найден: '+this.src)">
+                    <img src="screenshots/3d-profile.JPG" alt="3D профиль полёта">
                     <div class="screenshot-caption">3D профиль полёта</div>
                 </div>
                 <div class="screenshot-item">
-                    <img src="screenshots/mission-planner.JPG" alt="Планировщик миссий" onerror="console.warn('Не найден: '+this.src)">
+                    <img src="screenshots/mission-planner.JPG" alt="Планировщик миссий">
                     <div class="screenshot-caption">Планировщик миссий</div>
                 </div>
                 <div class="screenshot-item">
-                    <img src="screenshots/charts.JPG" alt="Графики и статистика" onerror="console.warn('Не найден: '+this.src)">
+                    <img src="screenshots/charts.JPG" alt="Графики и статистика">
                     <div class="screenshot-caption">Графики и статистика</div>
                 </div>
                 <div class="screenshot-item">
-                    <img src="screenshots/dji-integration.JPG" alt="Интеграция с DJI" onerror="console.warn('Не найден: '+this.src)">
+                    <img src="screenshots/dji-integration.JPG" alt="Интеграция с DJI">
                     <div class="screenshot-caption">Интеграция с DJI</div>
                 </div>
             </div>
@@ -171,7 +245,7 @@
                 <li>Минимум 4 ГБ оперативной памяти</li>
                 <li>300 МБ свободного места на диске</li>
                 <li>Интернет-соединение для загрузки карт (опционально)</li>
-                <li>USB-кабель для интеграции с пультами DJI FLY</li>
+                <li>USB-кабель для интеграции с пультами DJI RC2</li>
             </ul></div>
         </div>
     </section>
@@ -179,12 +253,183 @@
     <footer>
         <div class="footer-content">
             <h3>CaeleFly</h3>
-            <p>Инструмент для операторов БПЛА и геодезистов</p>
+            <p>Профессиональный инструмент для операторов БПЛА и геодезистов</p>
             <p class="footer-contact">Контакт: <a href="mailto:caelefly@gmail.com">caelefly@gmail.com</a></p>
             <div class="copyright">
                 <p>Версия 1.3.0.0 | Автор: DzyundzyaRV | 2026</p>
             </div>
         </div>
     </footer>
+
+    <!-- ================= HTML ЛАЙТБОКСА ================= -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр скриншота">
+        <div class="lightbox-counter" id="lbCounter">1 / 6</div>
+        <button class="lightbox-close" id="lbClose" aria-label="Закрыть">✕</button>
+        <button class="lightbox-prev" id="lbPrev" aria-label="Предыдущий">‹</button>
+        <button class="lightbox-next" id="lbNext" aria-label="Следующий">›</button>
+        <div class="lightbox-content">
+            <div class="lightbox-img-wrap">
+                <img class="lightbox-img" id="lbImg" src="" alt="">
+            </div>
+            <div class="lightbox-caption" id="lbCaption"></div>
+            <div class="lightbox-hint">Пробел — следующий · Shift+Пробел — предыдущий · клик по фото — зум · Esc — закрыть</div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var items = Array.prototype.slice.call(
+            document.querySelectorAll('#screenshotGrid .screenshot-item')
+        );
+
+        var lb        = document.getElementById('lightbox');
+        var lbImg     = document.getElementById('lbImg');
+        var lbCaption = document.getElementById('lbCaption');
+        var lbCounter = document.getElementById('lbCounter');
+        var btnClose  = document.getElementById('lbClose');
+        var btnPrev   = document.getElementById('lbPrev');
+        var btnNext   = document.getElementById('lbNext');
+
+        var currentIndex = 0;
+
+        // ===== Состояние зума/pan =====
+        var zoomed = false;
+        var panX = 0, panY = 0;
+        var isPanning = false;
+        var panStartX = 0, panStartY = 0;
+        var panStartPanX = 0, panStartPanY = 0;
+
+        function applyTransform() {
+            lbImg.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + (zoomed ? 2 : 1) + ')';
+        }
+
+        function resetZoom() {
+            zoomed = false; panX = 0; panY = 0;
+            lbImg.classList.remove('zoomed', 'dragging');
+            applyTransform();
+        }
+
+        // ===== Фича 1: прелоад соседних картинок =====
+        // Создаём скрытые Image(), чтобы браузер декодировал их заранее.
+        // При переключении стрелками картинка уже в памяти — без белого мига.
+        function preloadNeighbors(index) {
+            var prev = (index - 1 + items.length) % items.length;
+            var next = (index + 1) % items.length;
+            [prev, next].forEach(function (i) {
+                var img = new Image();
+                img.src = items[i].querySelector('img').src;
+            });
+        }
+
+        function show(index) {
+            if (index < 0) index = items.length - 1;
+            if (index >= items.length) index = 0;
+            currentIndex = index;
+
+            var img = items[index].querySelector('img');
+            lbImg.src = img.src;
+            lbImg.alt = img.alt;
+            lbCaption.textContent = img.alt;
+            lbCounter.textContent = (index + 1) + ' / ' + items.length;
+
+            resetZoom();           // новая картинка всегда открывается в 1×
+            preloadNeighbors(index);
+        }
+
+        function open(index) {
+            show(index);
+            lb.classList.add('active');
+            document.body.classList.add('lb-open');
+        }
+
+        function close() {
+            lb.classList.remove('active');
+            document.body.classList.remove('lb-open');
+            resetZoom();
+            setTimeout(function () { lbImg.src = ''; }, 250);
+        }
+
+        function next() { show(currentIndex + 1); }
+        function prev() { show(currentIndex - 1); }
+
+        // Клик по превью — открыть
+        items.forEach(function (item, i) {
+            item.addEventListener('click', function () { open(i); });
+        });
+
+        // ===== Фича 2: зум по клику + pan =====
+        lbImg.addEventListener('click', function (e) {
+            // Если только что был drag — не считаем это кликом
+            if (isPanning && (Math.abs(e.clientX - panStartX) > 5 || Math.abs(e.clientY - panStartY) > 5)) {
+                return;
+            }
+            zoomed = !zoomed;
+            if (!zoomed) { panX = 0; panY = 0; }
+            lbImg.classList.toggle('zoomed', zoomed);
+            applyTransform();
+        });
+
+        lbImg.addEventListener('mousedown', function (e) {
+            if (!zoomed) return;
+            isPanning = true;
+            panStartX = e.clientX; panStartY = e.clientY;
+            panStartPanX = panX; panStartPanY = panY;
+            lbImg.classList.add('dragging');
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!isPanning) return;
+            panX = panStartPanX + (e.clientX - panStartX);
+            panY = panStartPanY + (e.clientY - panStartY);
+            applyTransform();
+        });
+
+        document.addEventListener('mouseup', function () {
+            if (isPanning) {
+                isPanning = false;
+                lbImg.classList.remove('dragging');
+            }
+        });
+
+        // ===== Фича 3: клавиатура =====
+        document.addEventListener('keydown', function (e) {
+            if (!lb.classList.contains('active')) return;
+            if (e.key === 'Escape') close();
+            else if (e.key === 'ArrowRight') next();
+            else if (e.key === 'ArrowLeft') prev();
+            else if (e.key === ' ') {          // Пробел — следующий
+                e.preventDefault();
+                if (e.shiftKey) prev(); else next();
+            }
+        });
+
+        // Кнопки
+        btnClose.addEventListener('click', close);
+        btnNext.addEventListener('click', function (e) { e.stopPropagation(); next(); });
+        btnPrev.addEventListener('click', function (e) { e.stopPropagation(); prev(); });
+
+        // Клик по тёмному фону (не по картинке) — закрыть
+        lb.addEventListener('click', function (e) {
+            if (e.target === lb) close();
+        });
+
+        // Свайпы на мобильных
+        var touchStartX = 0, touchStartY = 0;
+        lb.addEventListener('touchstart', function (e) {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+        lb.addEventListener('touchend', function (e) {
+            var dx = e.changedTouches[0].screenX - touchStartX;
+            var dy = e.changedTouches[0].screenY - touchStartY;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) next(); else prev();
+            } else if (dy > 100 && Math.abs(dy) > Math.abs(dx)) {
+                close();
+            }
+        }, { passive: true });
+    })();
+    </script>
 </body>
 </html>
