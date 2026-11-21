@@ -4,432 +4,703 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CaeleFly — Создание, анализ и загрузка миссий для DJI FLY</title>
-    <meta name="description" content="CaeleFly — десктопное приложение для планирования полётных заданий DJI FLY и анализа аэрофотосъёмки.">
-
-    <meta property="og:title" content="CaeleFly — Планировщик миссий БПЛА">
+	<meta name="description" content="CaeleFly — десктопное приложение для планирования полётных заданий DJI FLY и анализа аэрофотосъёмки.">
+	
+	<meta property="og:title" content="CaeleFly — Планировщик миссий БПЛА">
     <meta property="og:description" content="Инструмент для операторов БПЛА: планирование маршрутов, учёт рельефа, анализ перекрытий, интеграция с DJI FLY">
     <meta property="og:type" content="website">
     <meta property="og:image" content="icon.png">
-
+	
     <link rel="icon" type="image/x-icon" href="icon.ico">
-
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0099cc;
+            --secondary: #7c3aed;
+            --bg-dark: #0a0e27;
+            --bg-darker: #050816;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #e6e6eb; line-height: 1.6; min-height: 100vh;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .hero { text-align: center; padding: 80px 20px 60px;
-            background: radial-gradient(circle at 50% 0%, rgba(0, 120, 212, 0.15) 0%, transparent 50%); }
-        .hero-icon { width: 200px; height: 200px; margin: 0 auto 30px;
-            animation: float 3s ease-in-out infinite; }
-        .hero-icon img { width: 100%; height: 100%; object-fit: contain; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .hero h1 { font-size: 3.5em; background: linear-gradient(135deg, #00a8ff 0%, #00ff88 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            margin-bottom: 15px; font-weight: 800; }
-        .hero .subtitle { font-size: 1.3em; color: #a0a0aa; max-width: 700px; margin: 0 auto 30px; }
-        .version-badge { display: inline-block; background: rgba(0, 120, 212, 0.2);
-            border: 1px solid #0078d4; color: #00a8ff; padding: 6px 16px; border-radius: 20px;
-            font-size: 0.9em; margin-bottom: 30px; }
-        .buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
-        .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 32px;
-            border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 1.05em;
-            transition: all 0.3s ease; border: none; cursor: pointer; }
-        .btn-primary { background: linear-gradient(135deg, #107c10 0%, #0e6b0e 100%); color: white;
-            box-shadow: 0 4px 15px rgba(16, 124, 16, 0.4); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 124, 16, 0.6); }
-        .section { padding: 60px 20px; }
-        .section-title { text-align: center; font-size: 2.2em; margin-bottom: 50px; color: #fff; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px; max-width: 1200px; margin: 0 auto; }
-        .feature-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px; padding: 30px; transition: all 0.3s ease; }
-        .feature-card:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(0, 168, 255, 0.3); }
-        .feature-card h3 { color: #00a8ff; margin-bottom: 10px; font-size: 1.3em; }
-        .feature-card p { color: #a0a0aa; font-size: 0.95em; }
-        .screenshots { background: rgba(0, 0, 0, 0.2); }
-        .screenshot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; max-width: 1200px; margin: 0 auto; }
-        .screenshot-item { border-radius: 12px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease; cursor: zoom-in; background: #10141c; position: relative; }
-        .screenshot-item:hover { transform: scale(1.02); border-color: #00a8ff;
-            box-shadow: 0 8px 24px rgba(0, 168, 255, 0.25); }
-        .screenshot-item img { width: 100%; height: 220px; object-fit: cover; display: block; }
-        .screenshot-item::after {
-            content: "🔍"; position: absolute; top: 10px; right: 10px;
-            background: rgba(0,0,0,0.6); color: white; width: 32px; height: 32px;
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 16px; opacity: 0; transition: opacity 0.25s; pointer-events: none;
-        }
-        .screenshot-item:hover::after { opacity: 1; }
-        .screenshot-caption { padding: 12px; background: rgba(0, 0, 0, 0.5); text-align: center;
-            font-size: 0.9em; color: #a0a0aa; }
 
-        /* ================= ЛАЙТБОКС ================= */
-        .lightbox {
-            position: fixed; inset: 0; z-index: 10000;
-            background: rgba(0, 0, 0, 0.92);
-            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-            display: none; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.25s ease;
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.1) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
         }
-        .lightbox.active { display: flex; opacity: 1; }
-        .lightbox-content {
-            position: relative; max-width: 92vw;
-            display: flex; flex-direction: column; align-items: center;
-            transform: scale(0.95); transition: transform 0.25s ease;
-        }
-        .lightbox.active .lightbox-content { transform: scale(1); }
-        /* Обёртка картинки с overflow hidden — чтобы зум не вылезал за рамки */
-        .lightbox-img-wrap {
-            max-width: 92vw; max-height: 78vh; overflow: hidden;
-            border-radius: 10px; background: #0d1117;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-            display: flex; align-items: center; justify-content: center;
-        }
-        .lightbox-img {
-            max-width: 92vw; max-height: 78vh;
-            object-fit: contain; display: block;
-            cursor: zoom-in;
-            transition: transform 0.25s ease;
-            transform-origin: center center;
-            will-change: transform;
-        }
-        .lightbox-img.zoomed { cursor: grab; }
-        .lightbox-img.zoomed.dragging { cursor: grabbing; transition: none; }
-        .lightbox-caption {
-            margin-top: 14px; color: #e6e6eb; font-size: 1em;
-            text-align: center; max-width: 90vw;
-        }
-        .lightbox-hint {
-            margin-top: 6px; color: #666; font-size: 0.8em; text-align: center;
-        }
-        .lightbox-counter {
-            position: absolute; top: 16px; left: 20px;
-            color: rgba(255,255,255,0.7); font-size: 0.95em;
-            background: rgba(255,255,255,0.08); padding: 6px 14px;
-            border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
-        }
-        .lightbox-close, .lightbox-prev, .lightbox-next {
-            position: absolute; background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2); color: white;
-            width: 44px; height: 44px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px; cursor: pointer; transition: all 0.2s ease;
-            user-select: none;
-        }
-        .lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
-            background: #00a8ff; border-color: #00a8ff; transform: scale(1.08);
-        }
-        .lightbox-close { top: 16px; right: 20px; }
-        .lightbox-prev { left: 20px; top: 50%; transform: translateY(-50%); }
-        .lightbox-next { right: 20px; top: 50%; transform: translateY(-50%); }
-        .lightbox-prev:hover { transform: translateY(-50%) scale(1.08); }
-        .lightbox-next:hover { transform: translateY(-50%) scale(1.08); }
 
-        body.lb-open { overflow: hidden; }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
 
-        .tech-stack { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
-            max-width: 900px; margin: 0 auto; }
-        .tech-badge { background: rgba(0, 120, 212, 0.15); border: 1px solid rgba(0, 120, 212, 0.3);
-            color: #00a8ff; padding: 8px 18px; border-radius: 20px; font-size: 0.9em; font-weight: 500; }
-        .requirements { background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 30px;
-            max-width: 700px; margin: 0 auto; }
-        .requirements ul { list-style: none; }
-        .requirements li { padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex; align-items: center; gap: 12px; }
-        .requirements li:before { content: "\2713"; color: #00ff88; font-weight: bold; font-size: 1.2em; }
-        footer { background: rgba(0, 0, 0, 0.3); padding: 40px 20px; text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1); }
-        .footer-content { max-width: 800px; margin: 0 auto; }
-        .footer-contact { color: #00a8ff; font-size: 1em; margin: 15px 0; }
-        .footer-contact a { color: #00a8ff; text-decoration: none; }
-        .footer-contact a:hover { color: #00ff88; }
-        .copyright { color: #666; font-size: 0.9em; margin-top: 20px; }
+        /* Header */
+        header {
+            padding: 32px 0;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 14, 39, 0.8);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 100px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.1;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #ffffff 0%, #a0aec0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(16px, 2vw, 20px);
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--bg-darker);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 17px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.5);
+        }
+
+        .cta-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 40px);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: -0.5px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* Gallery Section */
+        .gallery {
+            padding: 80px 0;
+            background: var(--bg-darker);
+            margin: 0 -24px;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+
+        .gallery-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+
+        .slider {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+
+        .slide {
+            min-width: 100%;
+            position: relative;
+        }
+
+        .slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .slide-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            padding: 40px 32px 24px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .slider-controls {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .slider-btn {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: var(--primary);
+        }
+
+        .slider-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dot.active {
+            background: var(--primary);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .slider-hint {
+            text-align: center;
+            margin-top: 16px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* Requirements Section */
+        .requirements {
+            padding: 80px 0;
+        }
+
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .requirement-item:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateX(4px);
+        }
+
+        .requirement-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 20px;
+        }
+
+        .requirement-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0 40px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-darker);
+            margin-top: 80px;
+        }
+
+        .footer-content {
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .footer-tagline {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+
+        .footer-contact {
+            margin-bottom: 24px;
+        }
+
+        .footer-contact a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .footer-contact a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .footer-info {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5em; } .hero .subtitle { font-size: 1.1em; }
-            .hero-icon { width: 140px; height: 140px; }
-            .section-title { font-size: 1.8em; } .buttons { flex-direction: column; }
-            .btn { width: 100%; justify-content: center; }
-            .lightbox-prev { left: 8px; width: 38px; height: 38px; font-size: 18px; }
-            .lightbox-next { right: 8px; width: 38px; height: 38px; font-size: 18px; }
-            .lightbox-close { top: 10px; right: 10px; width: 38px; height: 38px; }
+            .hero {
+                padding: 60px 0 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .requirements-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+            }
         }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card,
+        .requirement-item {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .feature-card:nth-child(4) { animation-delay: 0.4s; }
+        .feature-card:nth-child(5) { animation-delay: 0.5s; }
+        .feature-card:nth-child(6) { animation-delay: 0.6s; }
+        .feature-card:nth-child(7) { animation-delay: 0.7s; }
+        .feature-card:nth-child(8) { animation-delay: 0.8s; }
     </style>
 </head>
 <body>
-    <section class="hero">
-        <div class="hero-icon">
-            <img src="icon.png" alt="CaeleFly">
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">CaeleFly</div>
+                <div class="version-badge">Версия 1.3.0.0</div>
+            </div>
         </div>
-        <h1>CaeleFly</h1>
-        <p class="subtitle">
-            Десктопное приложение для планирования миссий DJI FLY
-            и анализа аэрофотосъёмки.
-        </p>
-        <div class="version-badge">Версия 1.3.0.0</div>
-        <div class="buttons">
-            <a href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip" class="btn btn-primary">
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Создание, анализ и загрузка миссий для DJI FLY</h1>
+            <p class="subtitle">Десктопное приложение для планирования миссий DJI FLY и анализа аэрофотосъёмки</p>
+            <a href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip" class="cta-button">
+                <svg fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
                 Скачать для Windows
             </a>
         </div>
     </section>
 
-    <section class="section">
+    <section class="features">
         <div class="container">
             <h2 class="section-title">Ключевые возможности</h2>
             <div class="features-grid">
-                <div class="feature-card"><h3>Умное планирование</h3><p>Создание миссий любой сложности: стандартные точки, полигон, трасса, орбита, гексагональная и горизонтальная съёмка для отвесных стен и откосов</p></div>
-                <div class="feature-card"><h3>Интерактивная карта</h3><p>Работа со спутниковыми подложками, офлайн-картами (MBTiles) и наложением собственных GeoTIFF слоёв</p></div>
-                <div class="feature-card"><h3>Учёт рельефа (DEM/DSM)</h3><p>Загрузка GeoTIFF для автоматического расчёта абсолютных высот и безопасного HAG с учётом перепада высот</p></div>
-                <div class="feature-card"><h3>Анализ аэрофотосъёмки</h3><p>Автоматический расчёт продольного и поперечного перекрытия, визуальное уточнение координат через OpenCV, расчёт реального GSD</p></div>
-                <div class="feature-card"><h3>3D-визуализация</h3><p>Построение профиля полёта (рельеф vs дрон), гистограммы GSD, интерактивный 3D-обзор маршрута</p></div>
-                <div class="feature-card"><h3>Интеграция с DJI</h3><p>Прямое чтение, превью и загрузка KMZ-миссий на пульт DJI через USB (MTP) без лишних действий</p></div>
-                <div class="feature-card"><h3>Отчётность</h3><p>Мгновенный генератор профессиональных отчётов в PDF и Excel с графиками и статистикой</p></div>
-                <div class="feature-card"><h3>Современный UI</h3><p>Тёмная тема, анимации, адаптивный интерфейс с поддержкой горячих клавиш и Undo/Redo</p></div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Умное планирование</h3>
+                    <p>Создание миссий любой сложности: стандартные точки, полигон, трасса, орбита, гексагональная и горизонтальная съёмка для отвесных стен и откосов</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>Интерактивная карта</h3>
+                    <p>Работа со спутниковыми подложками, офлайн-картами (MBTiles) и наложением собственных GeoTIFF слоёв</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⛰️</div>
+                    <h3>Учёт рельефа (DEM/DSM)</h3>
+                    <p>Загрузка GeoTIFF для автоматического расчёта абсолютных высот и безопасного HAG с учётом перепада высот</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Анализ аэрофотосъёмки</h3>
+                    <p>Автоматический расчёт продольного и поперечного перекрытия, визуальное уточнение координат через OpenCV, расчёт реального GSD</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>3D-визуализация</h3>
+                    <p>Построение профиля полёта (рельеф vs дрон), гистограммы GSD, интерактивный 3D-обзор маршрута</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>Интеграция с DJI</h3>
+                    <p>Прямое чтение, превью и загрузка KMZ-миссий на пульт DJI через USB (MTP) без лишних действий</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📄</div>
+                    <h3>Отчётность</h3>
+                    <p>Мгновенный генератор профессиональных отчётов в PDF и Excel с графиками и статистикой</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>Современный UI</h3>
+                    <p>Тёмная тема, анимации, адаптивный интерфейс с поддержкой горячих клавиш и Undo/Redo</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="section screenshots">
-        <div class="container">
+    <section class="gallery">
+        <div class="gallery-container">
             <h2 class="section-title">Интерфейс приложения</h2>
-            <div class="screenshot-grid" id="screenshotGrid">
-                <div class="screenshot-item">
-                    <img src="screenshots/map-view.JPG" alt="Интерактивная карта с маршрутом">
-                    <div class="screenshot-caption">Интерактивная карта с маршрутом</div>
+            <div class="slider">
+                <div class="slides" id="slides">
+                    <div class="slide">
+                        <img src="screenshots/map-view.JPG" alt="Интерактивная карта с маршрутом">
+                        <div class="slide-caption">Интерактивная карта с маршрутом</div>
+                    </div>
+                    <div class="slide">
+                        <img src="screenshots/overlap-analysis.JPG" alt="Анализ перекрытий снимков">
+                        <div class="slide-caption">Анализ перекрытий снимков</div>
+                    </div>
+                    <div class="slide">
+                        <img src="screenshots/3d-profile.JPG" alt="3D профиль полёта">
+                        <div class="slide-caption">3D профиль полёта</div>
+                    </div>
+                    <div class="slide">
+                        <img src="screenshots/mission-planner.JPG" alt="Планировщик миссий">
+                        <div class="slide-caption">Планировщик миссий</div>
+                    </div>
+                    <div class="slide">
+                        <img src="screenshots/charts.JPG" alt="Графики и статистика">
+                        <div class="slide-caption">Графики и статистика</div>
+                    </div>
+                    <div class="slide">
+                        <img src="screenshots/dji-integration.JPG" alt="Интеграция с DJI">
+                        <div class="slide-caption">Интеграция с DJI</div>
+                    </div>
                 </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/overlap-analysis.JPG" alt="Анализ перекрытий снимков">
-                    <div class="screenshot-caption">Анализ перекрытий снимков</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/3d-profile.JPG" alt="3D профиль полёта">
-                    <div class="screenshot-caption">3D профиль полёта</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/mission-planner.JPG" alt="Планировщик миссий">
-                    <div class="screenshot-caption">Планировщик миссий</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/charts.JPG" alt="Графики и статистика">
-                    <div class="screenshot-caption">Графики и статистика</div>
-                </div>
-                <div class="screenshot-item">
-                    <img src="screenshots/dji-integration.JPG" alt="Интеграция с DJI">
-                    <div class="screenshot-caption">Интеграция с DJI</div>
+                <div class="slider-controls">
+                    <button class="slider-btn" id="prevBtn">‹</button>
+                    <button class="slider-btn" id="nextBtn">›</button>
                 </div>
             </div>
+            <div class="slider-dots" id="dots"></div>
+            <div class="slider-hint">Пробел — следующий · Shift+Пробел — предыдущий · клик по фото — зум · Esc — закрыть</div>
         </div>
     </section>
 
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">Технологии</h2>
-            <div class="tech-stack">
-                <span class="tech-badge">C# / .NET</span><span class="tech-badge">WinForms</span><span class="tech-badge">WebView2</span><span class="tech-badge">Leaflet.js</span><span class="tech-badge">OpenCvSharp</span><span class="tech-badge">NetTopologySuite</span><span class="tech-badge">QuestPDF</span><span class="tech-badge">ClosedXML</span><span class="tech-badge">ScottPlot</span><span class="tech-badge">Cesium</span><span class="tech-badge">GeoTIFF</span><span class="tech-badge">MTP Protocol</span>
-            </div>
-        </div>
-    </section>
-
-    <section class="section">
+    <section class="requirements">
         <div class="container">
             <h2 class="section-title">Системные требования</h2>
-            <div class="requirements"><ul>
-                <li>Windows 10 / 11 (64-bit)</li>
-                <li>.NET Framework 4.7.2 или выше</li>
-                <li>Минимум 4 ГБ оперативной памяти</li>
-                <li>300 МБ свободного места на диске</li>
-                <li>Интернет-соединение для загрузки карт (опционально)</li>
-                <li>USB-кабель для интеграции с пультами DJI RC2</li>
-            </ul></div>
+            <div class="requirements-grid">
+                <div class="requirement-item">
+                    <div class="requirement-icon">💻</div>
+                    <div class="requirement-text">Windows 10 / 11 (64-bit)</div>
+                </div>
+                <div class="requirement-item">
+                    <div class="requirement-icon">⚙️</div>
+                    <div class="requirement-text">.NET Framework 4.7.2 или выше</div>
+                </div>
+                <div class="requirement-item">
+                    <div class="requirement-icon">🧠</div>
+                    <div class="requirement-text">Минимум 4 ГБ оперативной памяти</div>
+                </div>
+                <div class="requirement-item">
+                    <div class="requirement-icon">💾</div>
+                    <div class="requirement-text">300 МБ свободного места на диске</div>
+                </div>
+                <div class="requirement-item">
+                    <div class="requirement-icon">🌐</div>
+                    <div class="requirement-text">Интернет-соединение для загрузки карт (опционально)</div>
+                </div>
+                <div class="requirement-item">
+                    <div class="requirement-icon">🔌</div>
+                    <div class="requirement-text">USB-кабель для интеграции с пультами DJI RC2</div>
+                </div>
+            </div>
         </div>
     </section>
 
     <footer>
-        <div class="footer-content">
-            <h3>CaeleFly</h3>
-            <p>Профессиональный инструмент для операторов БПЛА и геодезистов</p>
-            <p class="footer-contact">Контакт: <a href="mailto:caelefly@gmail.com">caelefly@gmail.com</a></p>
-            <div class="copyright">
-                <p>Версия 1.3.0.0 | Автор: DzyundzyaRV | 2026</p>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">CaeleFly</div>
+                <div class="footer-tagline">Профессиональный инструмент для операторов БПЛА и геодезистов</div>
+                <div class="footer-contact">
+                    <a href="mailto:caelefly@gmail.com">caelefly@gmail.com</a>
+                </div>
+                <div class="footer-info">
+                    Версия 1.3.0.0 | Автор: DzyundzyaRV | 2026
+                </div>
             </div>
         </div>
     </footer>
 
-    <!-- ================= HTML ЛАЙТБОКСА ================= -->
-    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Просмотр скриншота">
-        <div class="lightbox-counter" id="lbCounter">1 / 6</div>
-        <button class="lightbox-close" id="lbClose" aria-label="Закрыть">✕</button>
-        <button class="lightbox-prev" id="lbPrev" aria-label="Предыдущий">‹</button>
-        <button class="lightbox-next" id="lbNext" aria-label="Следующий">›</button>
-        <div class="lightbox-content">
-            <div class="lightbox-img-wrap">
-                <img class="lightbox-img" id="lbImg" src="" alt="">
-            </div>
-            <div class="lightbox-caption" id="lbCaption"></div>
-            <div class="lightbox-hint">Пробел — следующий · Shift+Пробел — предыдущий · клик по фото — зум · Esc — закрыть</div>
-        </div>
-    </div>
-
     <script>
-    (function () {
-        var items = Array.prototype.slice.call(
-            document.querySelectorAll('#screenshotGrid .screenshot-item')
-        );
+        const slides = document.getElementById('slides');
+        const totalSlides = slides.children.length;
+        let currentSlide = 0;
 
-        var lb        = document.getElementById('lightbox');
-        var lbImg     = document.getElementById('lbImg');
-        var lbCaption = document.getElementById('lbCaption');
-        var lbCounter = document.getElementById('lbCounter');
-        var btnClose  = document.getElementById('lbClose');
-        var btnPrev   = document.getElementById('lbPrev');
-        var btnNext   = document.getElementById('lbNext');
-
-        var currentIndex = 0;
-
-        // ===== Состояние зума/pan =====
-        var zoomed = false;
-        var panX = 0, panY = 0;
-        var isPanning = false;
-        var panStartX = 0, panStartY = 0;
-        var panStartPanX = 0, panStartPanY = 0;
-
-        function applyTransform() {
-            lbImg.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + (zoomed ? 2 : 1) + ')';
+        // Create dots
+        const dotsContainer = document.getElementById('dots');
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
         }
 
-        function resetZoom() {
-            zoomed = false; panX = 0; panY = 0;
-            lbImg.classList.remove('zoomed', 'dragging');
-            applyTransform();
-        }
-
-        // ===== Фича 1: прелоад соседних картинок =====
-        // Создаём скрытые Image(), чтобы браузер декодировал их заранее.
-        // При переключении стрелками картинка уже в памяти — без белого мига.
-        function preloadNeighbors(index) {
-            var prev = (index - 1 + items.length) % items.length;
-            var next = (index + 1) % items.length;
-            [prev, next].forEach(function (i) {
-                var img = new Image();
-                img.src = items[i].querySelector('img').src;
+        function updateSlider() {
+            slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+            document.querySelectorAll('.dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
             });
         }
 
-        function show(index) {
-            if (index < 0) index = items.length - 1;
-            if (index >= items.length) index = 0;
-            currentIndex = index;
-
-            var img = items[index].querySelector('img');
-            lbImg.src = img.src;
-            lbImg.alt = img.alt;
-            lbCaption.textContent = img.alt;
-            lbCounter.textContent = (index + 1) + ' / ' + items.length;
-
-            resetZoom();           // новая картинка всегда открывается в 1×
-            preloadNeighbors(index);
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
         }
 
-        function open(index) {
-            show(index);
-            lb.classList.add('active');
-            document.body.classList.add('lb-open');
-        }
-
-        function close() {
-            lb.classList.remove('active');
-            document.body.classList.remove('lb-open');
-            resetZoom();
-            setTimeout(function () { lbImg.src = ''; }, 250);
-        }
-
-        function next() { show(currentIndex + 1); }
-        function prev() { show(currentIndex - 1); }
-
-        // Клик по превью — открыть
-        items.forEach(function (item, i) {
-            item.addEventListener('click', function () { open(i); });
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
         });
 
-        // ===== Фича 2: зум по клику + pan =====
-        lbImg.addEventListener('click', function (e) {
-            // Если только что был drag — не считаем это кликом
-            if (isPanning && (Math.abs(e.clientX - panStartX) > 5 || Math.abs(e.clientY - panStartY) > 5)) {
-                return;
-            }
-            zoomed = !zoomed;
-            if (!zoomed) { panX = 0; panY = 0; }
-            lbImg.classList.toggle('zoomed', zoomed);
-            applyTransform();
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
         });
 
-        lbImg.addEventListener('mousedown', function (e) {
-            if (!zoomed) return;
-            isPanning = true;
-            panStartX = e.clientX; panStartY = e.clientY;
-            panStartPanX = panX; panStartPanY = panY;
-            lbImg.classList.add('dragging');
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', function (e) {
-            if (!isPanning) return;
-            panX = panStartPanX + (e.clientX - panStartX);
-            panY = panStartPanY + (e.clientY - panStartY);
-            applyTransform();
-        });
-
-        document.addEventListener('mouseup', function () {
-            if (isPanning) {
-                isPanning = false;
-                lbImg.classList.remove('dragging');
-            }
-        });
-
-        // ===== Фича 3: клавиатура =====
-        document.addEventListener('keydown', function (e) {
-            if (!lb.classList.contains('active')) return;
-            if (e.key === 'Escape') close();
-            else if (e.key === 'ArrowRight') next();
-            else if (e.key === 'ArrowLeft') prev();
-            else if (e.key === ' ') {          // Пробел — следующий
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.shiftKey) {
                 e.preventDefault();
-                if (e.shiftKey) prev(); else next();
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlider();
+            } else if (e.code === 'Space' && e.shiftKey) {
+                e.preventDefault();
+                currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+                updateSlider();
             }
         });
-
-        // Кнопки
-        btnClose.addEventListener('click', close);
-        btnNext.addEventListener('click', function (e) { e.stopPropagation(); next(); });
-        btnPrev.addEventListener('click', function (e) { e.stopPropagation(); prev(); });
-
-        // Клик по тёмному фону (не по картинке) — закрыть
-        lb.addEventListener('click', function (e) {
-            if (e.target === lb) close();
-        });
-
-        // Свайпы на мобильных
-        var touchStartX = 0, touchStartY = 0;
-        lb.addEventListener('touchstart', function (e) {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
-        }, { passive: true });
-        lb.addEventListener('touchend', function (e) {
-            var dx = e.changedTouches[0].screenX - touchStartX;
-            var dy = e.changedTouches[0].screenY - touchStartY;
-            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
-                if (dx < 0) next(); else prev();
-            } else if (dy > 100 && Math.abs(dy) > Math.abs(dx)) {
-                close();
-            }
-        }, { passive: true });
-    })();
     </script>
 </body>
 </html>
