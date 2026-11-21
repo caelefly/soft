@@ -56,7 +56,11 @@ button{font:inherit;color:inherit;background:none;border:0}
 ::selection{background:rgba(56,225,255,.28)}
 .wrap{width:min(100% - 40px,var(--maxw));margin-inline:auto}
 .mono{font-family:var(--mono)}
-.grad{background:linear-gradient(100deg,var(--cy),#a9f4ff 40%,var(--vi));-webkit-background-clip:text;background-clip:text;color:transparent}
+.grad{
+  background:linear-gradient(100deg,var(--cy),#a9f4ff 40%,var(--vi));
+  -webkit-background-clip:text;background-clip:text;
+  color:transparent;
+}
 
 /* ============ SCROLL PROGRESS ============ */
 .progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:90;background:rgba(255,255,255,.05)}
@@ -264,6 +268,23 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
   .cta{gap:10px}
   .f-right{margin-left:0;text-align:left}
   .f-bottom span:last-child{margin-left:0}
+}
+/* === Читаемость акцентного текста на мобильных === */
+@media (max-width:720px){
+  #terrain{opacity:.32}
+
+  .grad{
+    background:none;
+    -webkit-background-clip:border-box;
+            background-clip:border-box;
+    color:var(--cy);
+    text-shadow:0 0 18px rgba(56,225,255,.45);
+    background:rgba(7,11,20,.55);
+    border-radius:8px;
+    padding:0 6px;
+    box-decoration-break:clone;
+    -webkit-box-decoration-break:clone;
+  }
 }
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
