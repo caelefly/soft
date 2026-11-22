@@ -811,9 +811,7 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
 	
       // Подложки под UI-элементы (чтобы читались на пёстром спутнике)
       bctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      bctx.fillRect(w - 125, h - 48, 110, 34);
-      bctx.fillRect(w - 50, 15, 35, 50);
-
+      
       // Стрелка севера
       bctx.beginPath();
       bctx.moveTo(w - 32, 24);
