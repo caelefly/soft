@@ -119,6 +119,56 @@ h1{font-size:clamp(34px,5.1vw,60px);line-height:1.04;letter-spacing:-.035em;font
   padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.025)}
 .chip b{color:var(--ink-dim);font-weight:500}
 
+/* ============ HERO VISUAL ============ */
+.hero-visual{position:relative;min-width:0}
+
+.app-frame{
+  display:block;width:100%;padding:0;border:1px solid var(--line-2);
+  border-radius:16px;overflow:hidden;background:#0a1120;cursor:zoom-in;
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.9),0 0 0 1px rgba(56,225,255,.08);
+  transform:perspective(1200px) rotateY(-4deg) rotateX(2deg);
+  transition:transform .45s cubic-bezier(.2,.8,.3,1),box-shadow .45s,border-color .3s;
+  text-align:left;font:inherit;color:inherit;
+}
+.app-frame:hover,.app-frame:focus-visible{
+  transform:perspective(1200px) rotateY(0) rotateX(0);
+  border-color:rgba(56,225,255,.4);
+  box-shadow:0 34px 90px -30px rgba(0,0,0,.95),0 0 0 1px rgba(56,225,255,.25);
+}
+.app-bar{
+  display:flex;align-items:center;gap:6px;padding:9px 12px;
+  border-bottom:1px solid var(--line);background:rgba(255,255,255,.03);
+}
+.app-bar i{width:9px;height:9px;border-radius:50%;background:#ff5f57;flex:none}
+.app-bar i:nth-child(2){background:#febc2e}
+.app-bar i:nth-child(3){background:#28c840}
+.app-bar .mono{margin-left:8px;font-size:10.5px;color:var(--ink-mute);letter-spacing:.02em}
+.app-shot{display:block;position:relative;aspect-ratio:16/10;background:#0a1120}
+.app-shot img{width:100%;height:100%;object-fit:cover;display:block}
+
+.hero-facts{
+  list-style:none;margin:14px 0 0;padding:0;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.hero-facts li{
+  padding:12px 10px;border:1px solid var(--line);border-radius:12px;
+  background:var(--glass);backdrop-filter:blur(8px);
+  text-align:center;transition:border-color .25s,background .25s;
+}
+.hero-facts li:hover{border-color:rgba(56,225,255,.3);background:rgba(56,225,255,.05)}
+.hero-facts b{
+  display:block;font-family:var(--mono);font-size:clamp(15px,1.6vw,19px);
+  font-weight:700;color:var(--cy);line-height:1.1;letter-spacing:-.02em;
+}
+.hero-facts span{display:block;margin-top:3px;font-size:10.5px;color:var(--ink-mute);line-height:1.3}
+
+@media (max-width:1080px){
+  .app-frame{transform:none}
+}
+@media (max-width:600px){
+  .hero-facts{grid-template-columns:repeat(2,1fr)}
+}
+
 /* ============ HERO ICON (без рамки) ============ */
 .hero-icon{
   display:block;
@@ -398,6 +448,28 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
           <span class="chip"><b>PDF / Excel</b> · отчёты</span>
         </div>
       </div>
+	  <!-- ===== ВСТАВЬ СЮДА ===== -->
+      <div class="hero-visual" data-reveal style="--d:200ms">
+        <button class="app-frame" id="heroShot" aria-label="Открыть скриншот интерфейса">
+          <span class="app-bar">
+            <i></i><i></i><i></i>
+            <span class="mono">CaeleFly — mission planner</span>
+          </span>
+          <span class="app-shot">
+            <img src="screenshots/main-view.JPG" alt="Интерфейс CaeleFly — планировщик миссий" loading="eager">
+          </span>
+        </button>
+
+        <ul class="hero-facts">
+          <li><b>120</b><span>м · высота</span></li>
+          <li><b>4.42</b><span>см · GSD</span></li>
+          <li><b>181.0</b><span>м · захват X</span></li>
+          <li><b>135.7</b><span>м · захват Y</span></li>
+          <li><b>36.2</b><span>м · шаг снимков</span></li>
+          <li><b>40.7</b><span>м · шаг маршрутов</span></li>
+        </ul>
+      </div>
+      <!-- ===== КОНЕЦ ВСТАВКИ ===== -->
     </div>
   </section>
 
@@ -807,7 +879,7 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
 	
       // Подложки под UI-элементы (чтобы читались на пёстром спутнике)
       bctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      
+    
       // Стрелка севера
       bctx.beginPath();
       bctx.moveTo(w - 32, 24);
@@ -1154,6 +1226,11 @@ document.querySelectorAll('.card').forEach(el=>{
     el.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
   });
 });
+
+/* HERO → LIGHTBOX */
+const heroShot = document.getElementById('heroShot');
+if (heroShot) heroShot.addEventListener('click', () => open(0));
+
 })();
 </script>
 </body>
