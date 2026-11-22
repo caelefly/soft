@@ -879,25 +879,28 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
     for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
     ctx.stroke();
     
-    // 2. Пунктирная линия маршрута (непройденная часть) — с обводкой
-ctx.setLineDash([10, 8]);
-ctx.lineDashOffset = 0;
-ctx.lineWidth = 5;
-ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-ctx.lineJoin = 'round';
-ctx.lineCap = 'round';
-ctx.beginPath();
-ctx.moveTo(P[0][0], P[0][1]);
-for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
-ctx.stroke();
+        // 2. Пунктирная линия маршрута (непройденная часть) — с обводкой
+    ctx.setLineDash([10, 8]);
+    ctx.lineDashOffset = 0;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    
+    // Тёмная обводка — ТОЖЕ пунктирная, тоньше и прозрачнее
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.beginPath();
+    ctx.moveTo(P[0][0], P[0][1]);
+    for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
+    ctx.stroke();
 
-ctx.lineWidth = 2.5;
-ctx.strokeStyle = 'rgba(255, 214, 10, 0.95)';
-ctx.beginPath();
-ctx.moveTo(P[0][0], P[0][1]);
-for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
-ctx.stroke();
-ctx.setLineDash([]);
+    // Жёлтый пунктир поверх
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = 'rgba(255, 214, 10, 0.95)';
+    ctx.beginPath();
+    ctx.moveTo(P[0][0], P[0][1]);
+    for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
+    ctx.stroke();
+    ctx.setLineDash([]);
 
     // 3. Пройденный путь — с неоновым свечением
     ctx.save();
