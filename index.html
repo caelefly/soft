@@ -1230,10 +1230,6 @@ document.querySelectorAll('.card').forEach(el=>{
 /* HERO → LIGHTBOX */
 const heroShot = document.getElementById('heroShot');
 if (heroShot) heroShot.addEventListener('click', () => {
-  const lbBox = document.getElementById('lbBox');
-  const lbCap = document.getElementById('lbCap');
-  const lbN   = document.getElementById('lbN');
-  const lb    = document.getElementById('lb');
   lbBox.innerHTML = '<img src="screenshots/main-view.JPG" alt="Интерфейс CaeleFly — планировщик миссий" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain">';
   lbCap.textContent = 'Интерфейс CaeleFly — планировщик миссий';
   lbN.textContent = '';
