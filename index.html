@@ -348,90 +348,6 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
   .ico :is(path,circle,rect,line,polyline){stroke-dashoffset:0}
   #terrain{opacity:.35}
 }
-
-/* ============================================================
-   МОБИЛЬНАЯ ВЕРСИЯ (до 768px)
-   ============================================================ */
-@media (max-width: 768px) {
-
-  /* --- 1. Симуляция: убираем все подписи, оставляем только canvas --- */
-  
-  /* Заголовок симуляции "FLIGHT SIMULATION · DEMO" */
-  .sim-header,
-  [data-sim="header"],
-  h3:has(+ #simCanvas) {
-    display: none !important;
-  }
-
-  /* Бейдж LIVE */
-  .sim-live,
-  [data-sim="live"],
-  .live-badge {
-    display: none !important;
-  }
-
-  /* HUD-панель сверху: высота, GSD, скорость */
-  .sim-hud-top,
-  #simAlt, #simGsd, #simSpd,
-  .hud-item:has(#simAlt),
-  .hud-item:has(#simGsd),
-  .hud-item:has(#simSpd) {
-    display: none !important;
-  }
-
-  /* HUD-панель снизу: снимки, перекрытие */
-  .sim-hud-bottom,
-  #simShots, #simPct,
-  .hud-item:has(#simShots),
-  .hud-item:has(#simPct) {
-    display: none !important;
-  }
-
-  /* Прогресс-бар и его подпись */
-  .sim-progress,
-  #simBar,
-  .progress-label {
-    display: none !important;
-  }
-
-  /* Сам canvas растягиваем на всю доступную высоту */
-  #simCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 320px;
-    border-radius: 8px;
-  }
-
-  /* --- 2. Сброс акцентных стилей у выделенных слов --- */
-  
-  /* "До вылета", "в одном окне", "для DJI FLY" и похожие бейджи/акценты */
-  .accent,
-  .highlight,
-  .badge,
-  .tag,
-  .text-accent,
-  .text-highlight,
-  span[style*="color"],
-  em.accent,
-  strong.accent {
-    color: inherit !important;
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    font-weight: inherit !important;
-    font-style: inherit !important;
-    text-transform: none !important;
-    letter-spacing: normal !important;
-  }
-
-  /* Если у "для DJI FLY" отдельный класс — сбрасываем его */
-  .brand-accent,
-  .brand-highlight {
-    color: inherit !important;
-    background: transparent !important;
-    font-weight: normal !important;
-  }
-}
 </style>
 </head>
 <body>
@@ -890,27 +806,13 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
       }
     }
 
-    // --- 5. Оверлеи (БЕЗ виньетки!) ---
+    // --- 5. Оверлеи ---
     function applyOverlay() {
 	
       // Подложки под UI-элементы (чтобы читались на пёстром спутнике)
       bctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
       bctx.fillRect(w - 125, h - 48, 110, 34);
       bctx.fillRect(w - 50, 15, 35, 50);
-
-      // Масштабная линейка
-      ctx.strokeStyle = 'rgba(255, 214, 10, 0.95)';
-      bctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      bctx.lineWidth = 2;
-      const bx = w - 115, by = h - 28;
-      bctx.beginPath();
-      bctx.moveTo(bx, by); bctx.lineTo(bx + 90, by);
-      bctx.moveTo(bx, by - 5); bctx.lineTo(bx, by + 5);
-      bctx.moveTo(bx + 90, by - 5); bctx.lineTo(bx + 90, by + 5);
-      bctx.moveTo(bx + 45, by - 3); bctx.lineTo(bx + 45, by + 3);
-      bctx.stroke();
-      bctx.font = 'bold 11px ui-monospace, monospace';
-      bctx.fillText('500 м', bx + 28, by - 8);
 
       // Стрелка севера
       bctx.beginPath();
