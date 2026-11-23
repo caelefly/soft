@@ -202,7 +202,9 @@ h2{font-size:clamp(26px,3.5vw,42px);letter-spacing:-.03em;line-height:1.1;margin
 
 /* ============ SECTION DIVIDER ============ */
 /* разделитель только для крупных секций */
-section#features::before,
+section#features::before{
+  top:38px;
+}
 section#sim::before,
 section#screens::before,
 section#specs::before{
@@ -222,12 +224,12 @@ section#specs::before{
 
 /* на мобильных — чуть короче, чтобы не «резало» глаз */
 @media (max-width:600px){
-  section + section::before{
+  section#features::before,
+  section#sim::before,
+  section#screens::before,
+  section#specs::before{
     width:calc(100% - 32px);
-    background:linear-gradient(90deg,
-      transparent,
-      rgba(56,225,255,.28),
-      transparent);
+    background:linear-gradient(90deg, transparent, rgba(56,225,255,.28), transparent);
   }
 }
 
