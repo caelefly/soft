@@ -200,6 +200,37 @@ h2{font-size:clamp(26px,3.5vw,42px);letter-spacing:-.03em;line-height:1.1;margin
 .sub{color:var(--ink-dim);max-width:60ch;margin:14px 0 0}
 .head{margin-bottom:40px}
 
+/* ============ SECTION DIVIDER ============ */
+/* разделитель только для крупных секций */
+section#features::before,
+section#sim::before,
+section#screens::before,
+section#specs::before{
+  content:"";
+  position:absolute;
+  top:0; left:50%;
+  transform:translateX(-50%);
+  width:min(100% - 40px, var(--maxw));
+  height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(56,225,255,.22) 30%,
+    rgba(139,123,255,.22) 70%,
+    transparent 100%);
+  pointer-events:none;
+}
+
+/* на мобильных — чуть короче, чтобы не «резало» глаз */
+@media (max-width:600px){
+  section + section::before{
+    width:calc(100% - 32px);
+    background:linear-gradient(90deg,
+      transparent,
+      rgba(56,225,255,.28),
+      transparent);
+  }
+}
+
 /* ============ FEATURES ============ */
 .grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .card{position:relative;height:100%;padding:24px 22px 26px;border:1px solid var(--line);border-radius:var(--r);
@@ -315,6 +346,55 @@ h2{font-size:clamp(26px,3.5vw,42px);letter-spacing:-.03em;line-height:1.1;margin
 .dl-meta{margin-top:16px;display:grid;gap:6px;font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
 .dl-meta div{display:flex;justify-content:space-between;gap:10px}
 .dl-meta b{color:var(--ink-dim);font-weight:500}
+/* trust-строки в панели скачивания */
+.trust{
+  list-style:none;
+  margin:16px 0 0;
+  padding:14px 0 0;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:grid;
+  gap:9px;
+}
+.trust li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  color:var(--ink-dim);
+  line-height:1.3;
+}
+.trust li svg{
+  width:16px;
+  height:16px;
+  flex:none;
+  fill:none;
+  stroke:var(--cy);
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  opacity:.9;
+  filter:drop-shadow(0 0 4px rgba(56,225,255,.35));
+}
+.trust li span{ letter-spacing:-.005em; }
+
+/* тонкая анимация появления — в тон остальному сайту */
+.js .dl-panel[data-reveal].in .trust li{
+  animation:trustIn .5s cubic-bezier(.2,.8,.3,1) backwards;
+}
+.js .dl-panel[data-reveal].in .trust li:nth-child(1){ animation-delay:.35s; }
+.js .dl-panel[data-reveal].in .trust li:nth-child(2){ animation-delay:.45s; }
+.js .dl-panel[data-reveal].in .trust li:nth-child(3){ animation-delay:.55s; }
+@keyframes trustIn{
+  from{ opacity:0; transform:translateX(-6px); }
+  to  { opacity:1; transform:none; }
+}
+
+/* на мобильных — чуть компактнее */
+@media (max-width:600px){
+  .trust{ margin-top:14px; padding-top:12px; gap:8px; }
+  .trust li{ font-size:12.5px; }
+}
+
 
 /* ============ FOOTER ============ */
 footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;background:rgba(5,8,15,.5);backdrop-filter:blur(10px)}
@@ -376,15 +456,12 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
 }
 /* === Читаемость акцентного текста на мобильных === */
 @media (max-width:720px){
-  #terrain{opacity:.32}
-
   .grad{
-    background:none;
-    -webkit-background-clip:border-box;
-            background-clip:border-box;
-    color:var(--cy);
-    text-shadow:0 0 18px rgba(56,225,255,.35);
-    /* подложка убрана — padding и border-radius больше не нужны */
+    background:linear-gradient(100deg,var(--cy),#a9f4ff 60%,var(--vi));
+    -webkit-background-clip:text;
+            background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 1px 4px rgba(56,225,255,.28));  /* ← было .35, стало .28 */
   }
 }
 @media (prefers-reduced-motion:reduce){
@@ -576,11 +653,36 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
             Скачать .zip
           </a>
           <div class="dl-meta">
-            <div><span>Версия</span><b>1.3.0.0</b></div>
-            <div><span>Платформа</span><b>Windows x64</b></div>
-            <div><span>Формат миссий</span><b>KMZ (DJI FLY)</b></div>
-            <div><span>Лицензия</span><b>Shareware</b></div>
-          </div>
+  <div><span>Версия</span><b>1.3.0.0</b></div>
+  <div><span>Платформа</span><b>Windows x64</b></div>
+  <div><span>Формат миссий</span><b>KMZ (DJI FLY)</b></div>
+  <div><span>Лицензия</span><b>Shareware</b></div>
+</div>
+
+<ul class="trust" aria-label="Гарантии перед скачиванием">
+  <li>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3 4 6v6c0 4.5 3.4 8.5 8 9 4.6-.5 8-4.5 8-9V6Z"/>
+      <path d="m9 12 2 2 4-4"/>
+    </svg>
+    <span>Проверено Windows Defender</span>
+  </li>
+  <li>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 8v4M12 16h.01"/>
+    </svg>
+    <span>Без телеметрии и рекламы</span>
+  </li>
+  <li>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3v12"/>
+      <path d="m7 11 5 5 5-5"/>
+      <path d="M4 20h16"/>
+    </svg>
+    <span>Portable — установка не требуется</span>
+  </li>
+</ul>
         </div>
       </div>
     </div>
