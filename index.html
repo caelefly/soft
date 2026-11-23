@@ -397,6 +397,259 @@ section#specs::before{
   .trust li{ font-size:12.5px; }
 }
 
+/* ============ CONTACT ============ */
+section#contact::before{
+  content:"";
+  position:absolute;
+  top:0; left:50%;
+  transform:translateX(-50%);
+  width:min(100% - 40px, var(--maxw));
+  height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(56,225,255,.22) 30%,
+    rgba(139,123,255,.22) 70%,
+    transparent 100%);
+  pointer-events:none;
+}
+
+.contact-wrap{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:20px;
+  align-items:start;
+}
+
+.contact-form{
+  position:relative;
+  padding:26px 24px 28px;
+  max-width: 760px;
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  background:var(--glass);
+  backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:var(--shadow);
+}
+
+.cf-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.cf-field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-bottom:14px;
+}
+
+.cf-field label{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-mute);
+}
+
+.cf-field input,
+.cf-field select,
+.cf-field textarea{
+  width:100%;
+  padding:12px 14px;
+  font:inherit;
+  font-size:14.5px;
+  color:var(--ink);
+  background:rgba(255,255,255,.03);
+  border:1px solid var(--line-2);
+  border-radius:12px;
+  transition:border-color .2s, background .2s, box-shadow .2s;
+  outline:none;
+}
+
+.cf-field input::placeholder,
+.cf-field textarea::placeholder{
+  color:var(--ink-mute);
+  opacity:.7;
+}
+
+.cf-field input:hover,
+.cf-field select:hover,
+.cf-field textarea:hover{
+  border-color:rgba(255,255,255,.22);
+}
+
+.cf-field input:focus,
+.cf-field select:focus,
+.cf-field textarea:focus{
+  border-color:rgba(56,225,255,.65);
+  background:rgba(56,225,255,.04);
+  box-shadow:0 0 0 3px rgba(56,225,255,.15);
+}
+
+.cf-field textarea{
+  resize:vertical;
+  min-height:120px;
+  line-height:1.55;
+}
+
+.cf-field select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239fb0cc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:38px;
+  cursor:pointer;
+}
+.cf-field select option{ background:#0a1120; color:var(--ink); }
+
+/* ошибки полей */
+.cf-field input[aria-invalid="true"],
+.cf-field textarea[aria-invalid="true"],
+.cf-field select[aria-invalid="true"]{
+  border-color:rgba(255,110,110,.7);
+  background:rgba(255,80,80,.05);
+}
+
+.cf-err{
+  font-size:12px;
+  color:#ff9090;
+  min-height:0;
+}
+.cf-err:empty{ display:none; }
+
+.cf-foot{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+
+.cf-foot .btn{ flex:none; }
+
+.cf-note{
+  margin:0;
+  font-size:12px;
+  color:var(--ink-mute);
+  flex:1;
+  min-width:180px;
+}
+
+/* состояния отправки */
+.contact-form [data-fs-submit-btn][disabled]{
+  opacity:.65;
+  cursor:progress;
+}
+
+.cf-success{
+  display:none;
+  margin-top:18px;
+  padding:14px 16px;
+  border:1px solid rgba(80,220,140,.45);
+  background:rgba(16,42,30,.85);
+  border-radius:12px;
+  gap:12px;
+  align-items:flex-start;
+  font-size:14px;
+  color:#d6ffe8;
+  backdrop-filter:blur(8px);
+}
+.cf-success svg{
+  width:22px;height:22px;flex:none;
+  color:#5ee39a;
+  margin-top:2px;
+  filter:drop-shadow(0 0 6px rgba(94,227,154,.45));
+}
+.cf-success b{
+  display:block;
+  margin-bottom:2px;
+  color:#eafff4;
+  font-weight:600;
+}
+.cf-success span{
+  color:#a9d6bd;
+  font-size:13px;
+  line-height:1.45;
+}
+
+
+.contact-form[data-fs-form-status="success"] .cf-foot,
+.contact-form[data-fs-form-status="success"] .cf-field,
+.contact-form[data-fs-form-status="success"] .cf-row{ display:none; }
+
+.cf-error-global{
+  display:none;
+  margin-top:14px;
+  padding:12px 14px;
+  border:1px solid rgba(255,110,110,.35);
+  background:rgba(255,80,80,.08);
+  border-radius:12px;
+  color:#ffb3b3;
+  font-size:13.5px;
+}
+.cf-error-global:not(:empty){ display:block; }
+
+/* сайд-панель */
+.contact-side{
+  padding:26px 24px;
+  border:1px solid rgba(56,225,255,.22);
+  border-radius:var(--r);
+  background:linear-gradient(160deg,rgba(56,225,255,.10),rgba(139,123,255,.06));
+  backdrop-filter:blur(14px);
+  box-shadow:var(--shadow);
+}
+.contact-side h3{
+  margin:0 0 8px;
+  font-size:18px;
+  letter-spacing:-.02em;
+}
+.contact-side p{
+  margin:0 0 14px;
+  font-size:13.8px;
+  color:var(--ink-dim);
+}
+.contact-side .f-mail{
+  display:inline-block;
+  margin-bottom:18px;
+  font-size:14.5px;
+  color:var(--cy);
+  font-family:var(--mono);
+}
+.contact-side .f-mail:hover{ text-decoration:underline; }
+
+.contact-list{
+  list-style:none;
+  margin:0;
+  padding:16px 0 0;
+  border-top:1px solid rgba(255,255,255,.08);
+  display:grid;
+  gap:11px;
+}
+.contact-list li{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:13.5px;
+  color:var(--ink-dim);
+  line-height:1.45;
+}
+.contact-list svg{
+  width:17px;height:17px;flex:none;
+  fill:none;stroke:var(--cy);stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;
+  margin-top:1px;
+  filter:drop-shadow(0 0 4px rgba(56,225,255,.35));
+}
+
+@media (max-width:960px){
+  .contact-wrap{ grid-template-columns:1fr; }
+}
+@media (max-width:600px){
+  .cf-row{ grid-template-columns:1fr; }
+  .contact-form, .contact-side{ padding:20px 18px; }
+  .cf-foot .btn{ width:100%; justify-content:center; }
+}
 
 /* ============ FOOTER ============ */
 footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;background:rgba(5,8,15,.5);backdrop-filter:blur(10px)}
@@ -473,6 +726,41 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
   .ico :is(path,circle,rect,line,polyline){stroke-dashoffset:0}
   #terrain{opacity:.35}
 }
+/* === Плашка успеха: форсированный фон === */
+.cf-success[data-fs-active]{
+  background:#0f2419 !important;
+  color:#d6ffe8 !important;
+  border:1px solid rgba(80,220,140,.45) !important;
+  border-radius:12px !important;
+  padding:14px 16px !important;
+  display:flex !important;
+  align-items:flex-start !important;
+  gap:12px !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.cf-success[data-fs-active] > div{
+  background:transparent !important;
+}
+.cf-success[data-fs-active] b{
+  color:#eafff4 !important;
+  display:block !important;
+  margin-bottom:2px !important;
+}
+.cf-success[data-fs-active] span{
+  color:#a9d6bd !important;
+  font-size:13px !important;
+  line-height:1.45 !important;
+}
+.cf-success[data-fs-active] svg{
+  color:#5ee39a !important;
+  width:22px !important;
+  height:22px !important;
+  flex:none !important;
+  margin-top:2px !important;
+  filter:drop-shadow(0 0 6px rgba(94,227,154,.45)) !important;
+}
 </style>
 </head>
 <body>
@@ -493,6 +781,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
       <a href="#screens">Интерфейс</a>
       <a href="#specs">Требования</a>
       <a href="#download">Скачать</a>
+	  <a href="#contact">Связаться</a>
     </nav>
     <span class="ver mono">v1.3.0.0</span>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false"><i></i></button>
@@ -689,6 +978,83 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
       </div>
     </div>
   </section>
+  <!-- ================= CONTACT ================= -->
+<section id="contact">
+  <div class="wrap">
+    <div class="head" data-reveal>
+      <span class="kicker">// обратная связь</span>
+      <h2>Есть вопрос или идея? <span class="grad">Напишите нам</span></h2>
+    </div>
+
+    <div class="contact-wrap">
+      <form class="contact-form" id="contactForm" novalidate>
+        <!-- Formspree: служебные поля -->
+        <input type="hidden" name="_subject" value="CaeleFly — новое сообщение с сайта">
+        <input type="hidden" name="_language" value="ru">
+        <!-- honeypot против спама -->
+        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px">
+
+        <div class="cf-row">
+          <div class="cf-field">
+            <label for="cf-name">Имя</label>
+            <input id="cf-name" name="name" type="text" required
+                   autocomplete="name" data-fs-field placeholder="Как к вам обращаться">
+            <span class="cf-err" data-fs-error="name"></span>
+          </div>
+          <div class="cf-field">
+            <label for="cf-email">Email</label>
+            <input id="cf-email" name="email" type="email" required
+                   autocomplete="email" data-fs-field placeholder="you@example.com">
+            <span class="cf-err" data-fs-error="email"></span>
+          </div>
+        </div>
+
+        <div class="cf-field">
+          <label for="cf-topic">Тема</label>
+          <select id="cf-topic" name="topic" data-fs-field>
+            <option value="Вопрос по приложению">Вопрос по приложению</option>
+            <option value="Сообщение об ошибке">Сообщение об ошибке</option>
+            <option value="Предложение функции">Предложение функции</option>
+            <option value="Сотрудничество">Сотрудничество</option>
+            <option value="Другое">Другое</option>
+          </select>
+          <span class="cf-err" data-fs-error="topic"></span>
+        </div>
+
+        <div class="cf-field">
+          <label for="cf-message">Сообщение</label>
+          <textarea id="cf-message" name="message" rows="6" required
+                    data-fs-field placeholder="Введите текст Вашего сообщения..."></textarea>
+          <span class="cf-err" data-fs-error="message"></span>
+        </div>
+
+        <div class="cf-foot">
+          <button type="submit" class="btn btn-p" data-fs-submit-btn>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
+            </svg>
+            <span>Отправить сообщение</span>
+          </button>
+          <p class="cf-note">Отправляя форму, вы соглашаетесь на обработку Вашего email для ответа.</p>
+        </div>
+
+        <!-- Состояния -->
+        <div class="cf-success" data-fs-success role="status" aria-live="polite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+          <div>
+            <b>Спасибо! Сообщение отправлено.</b>
+            <span>Мы ответим на указанный email в ближайшее время.</span>
+          </div>
+        </div>
+        <div class="cf-error-global" data-fs-error role="alert" aria-live="assertive"></div>
+      </form>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer>
@@ -702,7 +1068,6 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
         <p>Профессиональный инструмент для операторов БПЛА и геодезистов.</p>
       </div>
       <div class="f-right">
-        <a class="f-mail" href="mailto:caelefly@gmail.com">caelefly@gmail.com</a>
       </div>
     </div>
     <div class="f-bottom">
@@ -1388,7 +1753,104 @@ if (heroShot) heroShot.addEventListener('click', () => {
   document.body.style.overflow = 'hidden';
 });
 
+/* === ПРИНУДИТЕЛЬНАЯ ВАЛИДАЦИЯ ПЕРЕД ОТПРАВКОЙ === */
+(function forceValidation(){
+  const form = document.getElementById('contactForm');
+  if(!form) return;
+
+  // Перехватываем submit на фазе capture, чтобы сработать РАНЬШЕ библиотеки Formspree
+  form.addEventListener('submit', function(e){
+    const name = form.querySelector('[name="name"]');
+    const email = form.querySelector('[name="email"]');
+    const message = form.querySelector('[name="message"]');
+
+    const nameVal = name ? name.value.trim() : '';
+    const emailVal = email ? email.value.trim() : '';
+    const messageVal = message ? message.value.trim() : '';
+
+    let firstBad = null;
+
+    // Сброс предыдущих ошибок
+    [name, email, message].forEach(el => {
+      if(el) el.removeAttribute('aria-invalid');
+    });
+
+    // Проверки
+    if(!nameVal){
+      if(name) name.setAttribute('aria-invalid','true');
+      firstBad = firstBad || name;
+    }
+    if(!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){
+      if(email) email.setAttribute('aria-invalid','true');
+      firstBad = firstBad || email;
+    }
+    if(!messageVal){
+      if(message) message.setAttribute('aria-invalid','true');
+      firstBad = firstBad || message;
+    }
+
+    if(firstBad){
+      // Останавливаем отправку — библиотека Formspree не получит событие
+      e.preventDefault();
+      e.stopImmediatePropagation();  // ← ключевой момент: блокируем другие обработчики
+
+      firstBad.focus();
+      firstBad.scrollIntoView({behavior:'smooth', block:'center'});
+      return false;
+    }
+  }, true); // ← capture: true — срабатывает раньше обработчика библиотеки
+})();
+
+/* ============================================================
+   6. CONTACT FORM (Formspree)
+   ============================================================ */
+(function contactForm(){
+  const form = document.getElementById('contactForm');
+  if(!form) return;
+
+  // плавный скролл к секции из навигации/футера
+  // (если добавил ссылку #contact — достаточно нативного scroll-behavior:smooth)
+  document.querySelectorAll('a[href="#contact"]').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      document.getElementById('contact')?.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  });
+
+  // Обработка результата отправки.
+  // SDK @formspree/ajax выставляет атрибуты data-fs-form-status на <form>,
+  // а также наполняет [data-fs-error] и [data-fs-success].
+  // Здесь — только UX-обвязка.
+  const observer = new MutationObserver(() => {
+    const status = form.getAttribute('data-fs-form-status');
+
+    if(status === 'success'){
+      form.reset();
+      // дать пользователю увидеть подтверждение
+      form.querySelector('.cf-success')?.scrollIntoView({behavior:'smooth', block:'center'});
+      // через 8 сек вернуть форму (чтобы можно было отправить ещё одно сообщение)
+      clearTimeout(form._resetT);
+      form._resetT = setTimeout(()=>{
+        form.removeAttribute('data-fs-form-status');
+      }, 8000);
+    }
+
+    if(status === 'error'){
+      // фокус на первое невалидное поле, если такое есть
+      const bad = form.querySelector('[aria-invalid="true"]');
+      bad?.focus({preventScroll:true});
+    }
+  });
+  observer.observe(form, {attributes:true, attributeFilter:['data-fs-form-status']});
+  })();
 })();
 </script>
+<script>
+  window.formspree = window.formspree || function () {
+    (formspree.q = formspree.q || []).push(arguments);
+  };
+  formspree('initForm', { formElement: '#contactForm', formId: 'maeolpwa' });
+</script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </body>
 </html>
