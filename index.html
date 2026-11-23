@@ -741,18 +741,78 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
   </li>`).join('');
 
 /* ============================================================
-   3. СИМУЛЯЦИЯ ПОЛЁТА ДРОНА
+   3. СИМУЛЯЦИЯ ПОЛЁТА ДРОНА (кэш тайлов + оптимизированный draw)
    ============================================================ */
 (function flightSim(){
   const cv = document.getElementById('simCanvas');
   if(!cv) return;
   const ctx = cv.getContext('2d');
   const base = document.createElement('canvas');
-  const bctx = base.getContext('2d');
+  const bctx = base.getContext('2d', {willReadFrequently:false});
 
   let w=0,h=0,dpr=1;
   let P=[], segs=[], total=0, photos=[], legGap=0;
 
+  /* ---------- 1. КЭШ ТАЙЛОВ ---------- */
+  const TILE = 256;
+  const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+  const tileCache = new Map();          // url -> HTMLImageElement (ready)
+  const tileQueue = [];                 // ожидающие загрузки
+  const MAX_PARALLEL = 6;
+  let inflight = 0;
+  let layoutId = 0;                     // защита от устаревших onload
+  const pendingOverlay = [];            // какие тайлы дорисовать после load
+
+  function loadTile(url, px, py, myLayout){
+    const cached = tileCache.get(url);
+    if(cached){
+      // уже загружен — рисуем сразу
+      try { bctx.drawImage(cached, px, py, TILE, TILE); } catch(_) {}
+      return;
+    }
+    tileQueue.push({url, px, py, layout:myLayout});
+    pumpQueue();
+  }
+
+  function pumpQueue(){
+    while(inflight < MAX_PARALLEL && tileQueue.length){
+      const job = tileQueue.shift();
+      // устаревший layout — выбрасываем
+      if(job.layout !== layoutId) continue;
+      inflight++;
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.decoding = 'async';
+      img.loading = 'eager';
+      img.onload = () => {
+        inflight--;
+        if(job.layout !== layoutId){ pumpQueue(); return; } // layout сменился
+        tileCache.set(job.url, img);
+        // рисуем только если тайл ещё «в кадре» текущего layout
+        try { bctx.drawImage(img, job.px, job.py, TILE, TILE); } catch(_) {}
+        // сетка-плейсхолдер больше не нужна — рисуем «шов» сверху для аккуратности
+        bctx.strokeStyle = 'rgba(0,0,0,.18)';
+        bctx.lineWidth = 1;
+        bctx.strokeRect(job.px+.5, job.py+.5, TILE-1, TILE-1);
+        pumpQueue();
+      };
+      img.onerror = () => {
+        inflight--;
+        if(job.layout === layoutId){
+          // серый плейсхолдер + лёгкая сетка
+          bctx.fillStyle = '#1f2f27';
+          bctx.fillRect(job.px, job.py, TILE, TILE);
+          bctx.strokeStyle = 'rgba(56,225,255,.06)';
+          bctx.lineWidth = 1;
+          bctx.strokeRect(job.px+.5, job.py+.5, TILE-1, TILE-1);
+        }
+        pumpQueue();
+      };
+      img.src = job.url;
+    }
+  }
+
+  /* ---------- 2. ГЕОМЕТРИЯ МАРШРУТА ---------- */
   const NP = (()=>{
     const legs=7, x0=.14, x1=.86, y0=.18, y1=.82, a=[];
     for(let i=0;i<legs;i++){
@@ -761,7 +821,6 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
     }
     return a;
   })();
-
   const hf = (x,y) => (Math.sin(x*.9+1.3)+Math.cos(y*1.25-.6)+Math.sin((x+y)*.75))/3;
 
   function layout(){
@@ -787,6 +846,10 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
     photos = [];
     for(let s = gap*.5; s < total; s += gap) photos.push(s);
 
+    // новый layout — инвалидируем устаревшие задачи
+    layoutId++;
+    tileQueue.length = 0;
+
     paintBase();
   }
 
@@ -806,241 +869,194 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
     return { x:l.b[0], y:l.b[1], ang:0 };
   }
 
-          function paintBase() {
-    bctx.clearRect(0, 0, w, h);
+  /* ---------- 3. БАЗОВЫЙ СЛОЙ (тайлы + стрелка N) ---------- */
+  function paintBase(){
+    const myLayout = layoutId;
+    bctx.clearRect(0,0,w,h);
 
-    // --- 1. Параметры карты ---
     const centerLat = 43.46122085;
     const centerLon = 43.56534004;
     const zoom = 17;
-
-    // --- 2. Математика тайлов ---
     const n = Math.pow(2, zoom);
     const latRad = centerLat * Math.PI / 180;
-    
-    // Координаты центра в тайловой системе (дробные)
     const xCenter = (centerLon + 180) / 360 * n;
-    const yCenter = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
-    
-    // Фиксированный размер тайла (стандарт TMS/XYZ)
-    const tileSize = 256;
-    
-    // Сколько тайлов нужно для покрытия всего экрана С БОЛЬШИМ ЗАПАСОМ
-    const tilesX = Math.ceil(w / tileSize) + 4;
-    const tilesY = Math.ceil(h / tileSize) + 4;
-    
-    // Начальные тайлы (центр карты должен быть в центре экрана)
-    const startX = Math.floor(xCenter) - Math.floor(tilesX / 2);
-    const startY = Math.floor(yCenter) - Math.floor(tilesY / 2);
-    
-    // Смещение: чтобы центр карты был точно в центре экрана
-    // Вычисляем, где на экране должен находиться левый верхний угол первого тайла
-    const offsetX = (w / 2) - ((xCenter - startX) * tileSize);
-    const offsetY = (h / 2) - ((yCenter - startY) * tileSize);
+    const yCenter = (1 - Math.log(Math.tan(latRad) + 1/Math.cos(latRad)) / Math.PI) / 2 * n;
 
-    // --- 3. Тёмная подложка (на случай если тайлы не загрузятся) ---
+    const tilesX = Math.ceil(w / TILE) + 4;
+    const tilesY = Math.ceil(h / TILE) + 4;
+    const startX = Math.floor(xCenter) - Math.floor(tilesX/2);
+    const startY = Math.floor(yCenter) - Math.floor(tilesY/2);
+    const offsetX = (w/2) - ((xCenter - startX) * TILE);
+    const offsetY = (h/2) - ((yCenter - startY) * TILE);
+
+    // фон на случай медленной сети
     bctx.fillStyle = '#1a2a20';
-    bctx.fillRect(0, 0, w, h);
+    bctx.fillRect(0,0,w,h);
 
-    // --- 4. Загрузка и отрисовка тайлов ---
-    const urlTpl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
-    
-    for (let ty = 0; ty < tilesY; ty++) {
-      for (let tx = 0; tx < tilesX; tx++) {
+    for(let ty=0; ty<tilesY; ty++){
+      for(let tx=0; tx<tilesX; tx++){
         const tileX = startX + tx;
         const tileY = startY + ty;
-        
-        const url = urlTpl.replace('{z}', zoom).replace('{y}', tileY).replace('{x}', tileX);
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        
-        // Позиция тайла на экране
-        const px = offsetX + tx * tileSize;
-        const py = offsetY + ty * tileSize;
-        
-        img.onload = () => {
-          bctx.drawImage(img, px, py, tileSize, tileSize);
-          applyOverlay();
-        };
-        img.onerror = () => {
-          // Если тайл не загрузился — рисуем серый квадрат с координатами
-          bctx.fillStyle = '#2a3a30';
-          bctx.fillRect(px, py, tileSize, tileSize);
-          bctx.strokeStyle = '#3a4a40';
-          bctx.lineWidth = 1;
-          bctx.strokeRect(px, py, tileSize, tileSize);
-        };
-        img.src = url;
+        const px = offsetX + tx*TILE;
+        const py = offsetY + ty*TILE;
+
+        // быстрый плейсхолдер-«шов», пока не пришёл тайл
+        bctx.strokeStyle = 'rgba(56,225,255,.05)';
+        bctx.lineWidth = 1;
+        bctx.strokeRect(px+.5, py+.5, TILE-1, TILE-1);
+
+        const url = TILE_URL
+          .replace('{z}', zoom).replace('{y}', tileY).replace('{x}', tileX);
+        loadTile(url, px, py, myLayout);
       }
     }
 
-    // --- 5. Оверлеи ---
-    function applyOverlay() {
-	
-      // Подложки под UI-элементы (чтобы читались на пёстром спутнике)
-      bctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    
-      // Стрелка севера
-      bctx.beginPath();
-      bctx.moveTo(w - 32, 24);
-      bctx.lineTo(w - 40, 52);
-      bctx.lineTo(w - 32, 46);
-      bctx.closePath();
-      bctx.fillStyle = 'rgba(220, 50, 50, 0.95)';
-      bctx.fill();
-      bctx.beginPath();
-      bctx.moveTo(w - 32, 24);
-      bctx.lineTo(w - 24, 52);
-      bctx.lineTo(w - 32, 46);
-      bctx.closePath();
-      bctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      bctx.fill();
-      bctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-      bctx.font = 'bold 12px ui-monospace, monospace';
-      bctx.fillText('N', w - 36, 18);
-    }
-
-    applyOverlay();
+    // стрелка N — один раз, не на каждый onload
+    drawNorth();
   }
 
+  function drawNorth(){
+    // тень-подложка
+    bctx.fillStyle = 'rgba(0,0,0,.55)';
+    bctx.beginPath();
+    bctx.arc(w-32, 40, 22, 0, 6.283);
+    bctx.fill();
+
+    // красная половина
+    bctx.beginPath();
+    bctx.moveTo(w-32, 22);
+    bctx.lineTo(w-40, 50);
+    bctx.lineTo(w-32, 44);
+    bctx.closePath();
+    bctx.fillStyle = 'rgba(220,60,60,.95)';
+    bctx.fill();
+
+    // белая половина
+    bctx.beginPath();
+    bctx.moveTo(w-32, 22);
+    bctx.lineTo(w-24, 50);
+    bctx.lineTo(w-32, 44);
+    bctx.closePath();
+    bctx.fillStyle = 'rgba(245,250,255,.95)';
+    bctx.fill();
+
+    // «N»
+    bctx.fillStyle = 'rgba(255,255,255,.95)';
+    bctx.font = 'bold 12px ui-monospace, monospace';
+    bctx.textAlign = 'center';
+    bctx.fillText('N', w-32, 16);
+    bctx.textAlign = 'left';
+  }
+
+  /* ---------- 4. ОПТИМИЗИРОВАННЫЙ DRAW ---------- */
   function draw(dist, ts){
     ctx.clearRect(0,0,w,h);
     ctx.drawImage(base,0,0,w,h);
 
-    const fw = legGap * 2.8; 
-    const fh = legGap * 3.3; 
+    const fw = legGap * 2.8;
+    const fh = legGap * 3.3;
 
-    for(const s of photos){
+    /* 4.1 — рамки снимков: одна петля, без двойного ореола */
+    ctx.lineWidth = 1;
+    for(let i=0;i<photos.length;i++){
+      const s = photos[i];
       if(s > dist) break;
       const p = at(s);
       const a = clamp((dist - s)/70, 0, 1) * .16;
-      
+      if(a < .01) continue;
+
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.ang);
-      
       ctx.fillStyle = `rgba(56,225,255,${a})`;
       ctx.strokeStyle = `rgba(56,225,255,${a*2.2})`;
-      ctx.lineWidth = 1;
-      
       ctx.fillRect(-fw/2, -fh/2, fw, fh);
       ctx.strokeRect(-fw/2, -fh/2, fw, fh);
-      
       ctx.restore();
     }
 
-        // ============================================
-    // МАРШРУТ ПОЛЁТА — с обводкой для читаемости
-    // ============================================
-    
-    // 1. Тёмная обводка (halo) — чтобы линия читалась на любом цвете
-    ctx.setLineDash([8, 7]);
-    ctx.lineDashOffset = 0;
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.55)';
+    /* 4.2 — маршрут: halo + жёлтый пунктир (2 прохода вместо 3) */
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(P[0][0], P[0][1]);
-    for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
-    ctx.stroke();
-    
-        // 2. Пунктирная линия маршрута (непройденная часть) — с обводкой
+
+    // единый halo (тёмный, толстый, пунктир)
     ctx.setLineDash([10, 8]);
-    ctx.lineDashOffset = 0;
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
-    
-    // Тёмная обводка — ТОЖЕ пунктирная, тоньше и прозрачнее
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(0,0,0,.5)';
     ctx.beginPath();
     ctx.moveTo(P[0][0], P[0][1]);
-    for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
+    for(let i=1;i<P.length;i++) ctx.lineTo(P[i][0], P[i][1]);
     ctx.stroke();
 
-    // Жёлтый пунктир поверх
+    // жёлтый пунктир поверх
     ctx.lineWidth = 2.5;
-    ctx.strokeStyle = 'rgba(255, 214, 10, 0.95)';
+    ctx.strokeStyle = 'rgba(255,214,10,.95)';
     ctx.beginPath();
     ctx.moveTo(P[0][0], P[0][1]);
-    for(let i = 1; i < P.length; i++) ctx.lineTo(P[i][0], P[i][1]);
+    for(let i=1;i<P.length;i++) ctx.lineTo(P[i][0], P[i][1]);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 3. Пройденный путь — с неоновым свечением
+    /* 4.3 — пройденный путь: неон, один path */
     ctx.save();
-    ctx.shadowColor = 'rgba(255, 214, 10, 0.85)';
+    ctx.shadowColor = 'rgba(255,214,10,.85)';
     ctx.shadowBlur = 12;
     ctx.lineWidth = 3.5;
-    ctx.strokeStyle = 'rgba(255, 214, 10, 1)';
-    ctx.lineJoin = 'round';
-    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255,214,10,1)';
     ctx.beginPath();
     ctx.moveTo(P[0][0], P[0][1]);
-    for(const g of segs){
-      if(dist >= g.s + g.d){ 
-        ctx.lineTo(g.b[0], g.b[1]); 
+    for(let i=0;i<segs.length;i++){
+      const g = segs[i];
+      if(dist >= g.s + g.d){
+        ctx.lineTo(g.b[0], g.b[1]);
       } else {
         const k = (dist - g.s) / g.d;
-        ctx.lineTo(g.a[0] + (g.b[0] - g.a[0]) * k, g.a[1] + (g.b[1] - g.a[1]) * k);
+        ctx.lineTo(g.a[0] + (g.b[0]-g.a[0])*k, g.a[1] + (g.b[1]-g.a[1])*k);
         break;
       }
     }
     ctx.stroke();
     ctx.restore();
 
-    // 4. Точки съёмки — крупные, с обводкой и пульсацией
-    for(const s of photos){
-      const p = at(s), done = s <= dist;
-      
-      // Внешний ореол для снятых точек
-      if(done && dist - s < 60) {
-        const k = (dist - s) / 60;
+    /* 4.4 — точки съёмки: одна петля, один ореол */
+    const PULSE = 60;
+    for(let i=0;i<photos.length;i++){
+      const s = photos[i];
+      const p = at(s);
+      const done = s <= dist;
+
+      // ореол только для свежих снимков
+      if(done && dist - s < PULSE){
+        const k = (dist - s) / PULSE;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 5 + k * 18, 0, 6.283);
-        ctx.strokeStyle = `rgba(56, 225, 255, ${(1 - k) * 0.7})`;
+        ctx.arc(p.x, p.y, 5 + k*18, 0, 6.283);
+        ctx.strokeStyle = `rgba(56,225,255,${(1-k)*.7})`;
         ctx.lineWidth = 1.5;
         ctx.stroke();
       }
-      
-      // Тёмная обводка точки (чтобы читалась на любом фоне)
+
+      // тёмная обводка точки
       ctx.beginPath();
       ctx.arc(p.x, p.y, done ? 4.5 : 3.5, 0, 6.283);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillStyle = 'rgba(0,0,0,.5)';
       ctx.fill();
-      
-      // Сама точка
+
+      // сама точка
       ctx.beginPath();
-      ctx.arc(p.x, p.y, done ? 3.5 : 2.5, 0, 6.283);
-      ctx.fillStyle = done ? '#ffffff' : 'rgba(200, 230, 255, 0.85)';
+      ctx.arc(p.x, p.y, done ? 3.2 : 2.4, 0, 6.283);
+      ctx.fillStyle = done ? '#ffffff' : 'rgba(200,230,255,.85)';
       ctx.fill();
-      
-      // Внутренняя яркая сердцевина для снятых точек
-      if(done) {
+
+      // яркая сердцевина только для снятых
+      if(done){
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.8, 0, 6.283);
+        ctx.arc(p.x, p.y, 1.6, 0, 6.283);
         ctx.fillStyle = '#38e1ff';
         ctx.fill();
       }
     }
 
-    for(const s of photos){
-      const p = at(s), done = s <= dist;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, done ? 2.6 : 2, 0, 6.283);
-      ctx.fillStyle = done ? '#9df3ff' : 'rgba(190,220,255,.35)';
-      ctx.fill();
-      if(done && dist - s < 48){
-        const k = (dist - s)/48;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3 + k*13, 0, 6.283);
-        ctx.strokeStyle = `rgba(56,225,255,${(1-k)*.65})`;
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-      }
-    }
-
+    /* 4.5 — дрон */
     const d = at(dist);
     ctx.save();
     ctx.translate(d.x, d.y);
@@ -1048,56 +1064,81 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
     ctx.shadowColor = 'rgba(56,225,255,.9)';
     ctx.shadowBlur = 14;
     ctx.strokeStyle = '#eafcff';
-    ctx.lineWidth = 2; // Чуть толще линии
+    ctx.lineWidth = 2;
 
-    // УВЕЛИЧЕННЫЙ ДРОН (координаты умножены ~на 1.5)
     ctx.beginPath();
     ctx.moveTo(-9,-9); ctx.lineTo(9,9);
-    ctx.moveTo(9,-9); ctx.lineTo(-9,9);
+    ctx.moveTo(9,-9);  ctx.lineTo(-9,9);
     ctx.stroke();
-    
+
     ctx.fillStyle = '#38e1ff';
     for(const [x,y] of [[-9,-9],[9,-9],[-9,9],[9,9]]){
-      ctx.beginPath(); ctx.arc(x,y,3.5,0,6.283); ctx.fill(); // Увеличенные "моторы"
+      ctx.beginPath(); ctx.arc(x,y,3.5,0,6.283); ctx.fill();
     }
-    
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#eafcff';
-    ctx.beginPath(); ctx.arc(0,0,3.8,0,6.283); ctx.fill(); // Увеличенный центр
+    ctx.beginPath(); ctx.arc(0,0,3.8,0,6.283); ctx.fill();
     ctx.restore();
 
+    /* 4.6 — уголки кадра */
     ctx.strokeStyle = 'rgba(56,225,255,.35)';
     ctx.lineWidth = 1.2;
-    const m = 8, L = 16;
-    [[m,m,1,1],[w-m,m,-1,1],[m,h-m,1,-1],[w-m,h-m,-1,-1]].forEach(([x,y,sx,sy])=>{
-      ctx.beginPath();
-      ctx.moveTo(x+sx*L,y); ctx.lineTo(x,y); ctx.lineTo(x,y+sy*L);
-      ctx.stroke();
-    });
+    const m=8, L=16;
+    ctx.beginPath();
+    // левый-верх
+    ctx.moveTo(m+L,m); ctx.lineTo(m,m); ctx.lineTo(m,m+L);
+    // правый-верх
+    ctx.moveTo(w-m-L,m); ctx.lineTo(w-m,m); ctx.lineTo(w-m,m+L);
+    // левый-низ
+    ctx.moveTo(m+L,h-m); ctx.lineTo(m,h-m); ctx.lineTo(m,h-m-L);
+    // правый-низ
+    ctx.moveTo(w-m-L,h-m); ctx.lineTo(w-m,h-m); ctx.lineTo(w-m,h-m-L);
+    ctx.stroke();
   }
 
+  /* ---------- 5. HUD С ГЛАДКИМ СГЛАЖИВАНИЕМ ---------- */
   const elAlt = document.getElementById('simAlt');
   const elGsd = document.getElementById('simGsd');
   const elSpd = document.getElementById('simSpd');
   const elShots = document.getElementById('simShots');
   const elPct = document.getElementById('simPct');
   const elBar = document.getElementById('simBar');
+
+  // целевые/текущие значения (lerp)
+  const hudState = { alt:120, gsd:2.41, spd:8.4 };
   let hudT = 0;
 
   function hud(dist, ts){
-    if(ts - hudT < 110) return;
+    // целевые значения «плывут» медленно и монотонно, а не синусом каждые 110мс
+    const phase = ts / 1000;
+    const tgtAlt = 120 + Math.sin(phase * 0.37) * 3.0;
+    const tgtGsd = 2.40 + Math.sin(phase * 0.29 + 1.1) * 0.06;
+    const tgtSpd = 8.4  + Math.sin(phase * 0.41 + 0.4) * 0.35;
+
+    // lerp — плавно догоняем
+    const k = 0.08;
+    hudState.alt += (tgtAlt - hudState.alt) * k;
+    hudState.gsd += (tgtGsd - hudState.gsd) * k;
+    hudState.spd += (tgtSpd - hudState.spd) * k;
+
+    // обновляем DOM не чаще 6 раз/сек
+    if(ts - hudT < 160) return;
     hudT = ts;
+
     let n = 0;
     for(const s of photos) if(s <= dist) n++;
     if(elShots) elShots.textContent = n;
+
     const pct = Math.round(dist/total*100);
     if(elPct) elPct.textContent = pct;
     if(elBar) elBar.style.width = pct + '%';
-    if(elGsd) elGsd.textContent = (2.36 + Math.sin(ts/2600)*.07).toFixed(2);
-    if(elAlt) elAlt.textContent = Math.round(120 + Math.sin(ts/2300)*3);
-    if(elSpd) elSpd.textContent = (8.2 + Math.sin(ts/1800)*.4).toFixed(1);
+
+    if(elGsd) elGsd.textContent = hudState.gsd.toFixed(2);
+    if(elAlt) elAlt.textContent = Math.round(hudState.alt);
+    if(elSpd) elSpd.textContent = hudState.spd.toFixed(1);
   }
 
+  /* ---------- 6. ЦИКЛ ---------- */
   let visible = true;
   let t0 = performance.now();
   let raf = 0;
@@ -1119,15 +1160,21 @@ document.getElementById('featGrid').innerHTML=FEATURES.map(([t,d,ic],i)=>`
     raf = requestAnimationFrame(loop);
   }
 
+  // ресайз — дебаунс 200мс, чтобы не плодить layout’ы при drag окна
+  let rzT = 0;
+  addEventListener('resize', ()=>{
+    clearTimeout(rzT);
+    rzT = setTimeout(()=>{ layout(); if(RM) draw(total*.55, 0); }, 200);
+  }, {passive:true});
+
   new IntersectionObserver(e=>{ visible = e[0].isIntersecting; }, {threshold:.05}).observe(cv);
-  addEventListener('resize', ()=>{ layout(); if(RM) draw(total*.55, 0); }, {passive:true});
+
   document.addEventListener('visibilitychange', ()=>{
     if(RM) return;
     if(document.hidden){ cancelAnimationFrame(raf); }
     else { t0 = performance.now() - (performance.now() % 22000); raf = requestAnimationFrame(loop); }
   });
 })();
-
 /* ============================================================
    4. ГАЛЕРЕЯ + LIGHTBOX
    ============================================================ */
