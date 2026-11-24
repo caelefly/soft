@@ -852,7 +852,10 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
         <h1 data-reveal style="--d:60ms">Создание, анализ и загрузка миссий <span class="grad">для DJI FLY</span></h1>
         <p class="lead" data-reveal style="--d:120ms">Десктопное приложение для планирования миссий DJI FLY и анализа аэрофотосъёмки: рельеф DEM/DSM, честный GSD, перекрытия и загрузка KMZ прямо на пульт.</p>
         <div class="cta" data-reveal style="--d:180ms">
-          <a class="btn btn-p" href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip">
+        
+		<!-- <a class="btn btn-p" href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip"> -->
+		    <a class="btn btn-p js-download" href="#" data-download>
+			
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>
             Скачать для Windows
           </a>
@@ -992,7 +995,10 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
         <div class="dl-panel" id="download" data-reveal style="--d:120ms">
           <h3>CaeleFly 1.3.0.0</h3>
           <p>Портативная сборка для Windows. Распакуйте архив и запустите приложение - установка не требуется.</p>
-          <a class="btn btn-p" href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip">
+          
+		   <!-- <a class="btn btn-p" href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip"> -->
+		    <a class="btn btn-p js-download" href="#" data-download>
+		 
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>
             Скачать .zip
           </a>
@@ -2002,5 +2008,17 @@ if (heroShot) heroShot.addEventListener('click', () => {
   console.log('[pd-consent] ✅ Скрипт инициализирован. Попробуй отправить без галки — должно заблокироваться.');
 })();
 </script>
+
+<script>
+// Вывод - не доступно для скачивания *****************************
+document.querySelectorAll('[data-download]').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.preventDefault();          // не переходим по ссылке
+    e.stopImmediatePropagation();// на всякий случай
+    alert('Приложение ещё не доступно для скачивания');
+  });
+});
+</script>
+
 </body>
 </html>
