@@ -783,6 +783,37 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
   text-decoration: underline;
   color: #81d4fa;
 }
+
+.consent { margin: 18px 0 22px; }
+.consent__label {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+}
+.consent__label input { position: absolute; opacity: 0; width: 0; height: 0; }
+.consent__box {
+  width: 20px; height: 20px; margin-top: 2px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 5px;
+  background: rgba(255,255,255,.04);
+  transition: border-color .15s, background .15s;
+}
+.consent__label:hover .consent__box { border-color: var(--accent, #4ea1ff); }
+.consent__label input:checked + .consent__box {
+  background: var(--accent, #4ea1ff);
+  border-color: var(--accent, #4ea1ff);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%230b0f14' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M3 8.5l3.2 3.2L13 4.9'/%3E%3C/svg%3E");
+  background-size: 14px; background-position: center; background-repeat: no-repeat;
+}
+.consent__label input:focus-visible + .consent__box {
+  outline: 2px solid var(--accent, #4ea1ff); outline-offset: 2px;
+}
+.consent__text { font-size: 13px; line-height: 1.55; opacity: .78; }
+.consent__text a { color: var(--accent, #4ea1ff); text-decoration: underline; }
+.consent__error { margin: 8px 0 0 32px; font-size: 13px; color: #ff6b6b; }
+
 </style>
 </head>
 <body>
@@ -1051,6 +1082,32 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
           <span class="cf-err" data-fs-error="message"></span>
         </div>
 
+        <div class="consent">
+  <label class="consent__label">
+    <input type="checkbox"
+           id="pd-consent"
+           name="consent"
+           value="yes"
+           required
+           aria-describedby="pd-consent-error">
+    <span class="consent__box" aria-hidden="true"></span>
+    <span class="consent__text">
+      Я даю <a href="/privacy.html#consent" target="_blank" rel="noopener">согласие
+      на обработку персональных данных</a> (имя, email, тема и текст сообщения)
+      для ответа на моё обращение в соответствии с
+      <a href="/privacy.html" target="_blank" rel="noopener">Политикой
+      обработки персональных данных</a>.
+    </span>
+  </label>
+  <p class="consent__error" id="pd-consent-error" role="alert" hidden>
+    Без согласия мы не сможем принять обращение — отметьте, пожалуйста, чекбокс.
+  </p>
+
+  <!-- доказательства согласия: уйдут вместе с полями формы -->
+  <input type="hidden" name="consent_policy_version" value="2026-11-24">
+  <input type="hidden" name="consent_timestamp" id="consent-ts" value="">
+</div>
+
         <div class="cf-foot">
           <button type="submit" class="btn btn-p" data-fs-submit-btn>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1059,8 +1116,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
             </svg>
             <span>Отправить сообщение</span>
           </button>
-          <p class="cf-note">Отправляя форму, вы соглашаетесь на обработку Вашего email для ответа.</p>
-        </div>
+          </div>
 
         <!-- Состояния -->
         <div class="cf-success" data-fs-success role="status" aria-live="polite">
@@ -1873,5 +1929,79 @@ if (heroShot) heroShot.addEventListener('click', () => {
   formspree('initForm', { formElement: '#contactForm', formId: 'maeolpwa' });
 </script>
 <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+<script>
+(function () {
+  'use strict';
+
+  // --- 1. Находим форму ---
+  // Ищем либо по id, либо первую <form> на странице.
+  // Если у тебя форма обёрнута в <div>, а не в <form> — см. блок "Если формы нет" ниже.
+  const form = document.querySelector('#contact-form') || document.querySelector('form');
+  if (!form) {
+    console.warn('[pd-consent] ❌ Форма не найдена. Проверь: есть ли <form> на странице или id="contact-form".');
+    return;
+  }
+  console.log('[pd-consent] ✅ Форма найдена:', form);
+
+  // --- 2. Находим чекбокс ---
+  const cb = form.querySelector('#pd-consent');
+  if (!cb) {
+    console.warn('[pd-consent] ❌ Чекбокс #pd-consent не найден внутри формы.');
+    return;
+  }
+  console.log('[pd-consent] ✅ Чекбокс найден.');
+
+  // --- 3. Находим блок ошибки и скрытое поле с таймстампом ---
+  const err = form.querySelector('#pd-consent-error');
+  const ts  = form.querySelector('#consent-ts');
+
+  // --- 4. Функция блокировки отправки ---
+  function blockIfNoConsent(e) {
+    if (cb.checked) {
+      // согласие есть — пропускаем, записываем момент
+      if (ts) ts.value = new Date().toISOString();
+      console.log('[pd-consent] ✅ Согласие получено, отправка разрешена. timestamp =', ts && ts.value);
+      return true;
+    }
+    // согласия нет — блокируем
+    e.preventDefault();
+    e.stopImmediatePropagation(); // глушим все остальные обработчики submit/click
+    if (err) err.hidden = false;
+    cb.setAttribute('aria-invalid', 'true');
+    cb.focus();
+    console.warn('[pd-consent] ⛔ Отправка заблокирована: чекбокс не отмечен.');
+    return false;
+  }
+
+  // --- 5. Вешаем на submit (capture: true — срабатывает раньше всех) ---
+  form.addEventListener('submit', blockIfNoConsent, true);
+
+  // --- 6. Дополнительно: перехватываем click на любой кнопке внутри формы ---
+  // Это нужно, если форма отправляется не через submit, а через обработчик click
+  // (так делают Formspree, EmailJS, самописные fetch-обработчики).
+  form.addEventListener('click', function (e) {
+    const btn = e.target.closest('button, input[type="submit"]');
+    if (!btn) return;
+    if (!cb.checked) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (err) err.hidden = false;
+      cb.setAttribute('aria-invalid', 'true');
+      cb.focus();
+      console.warn('[pd-consent] ⛔ Click заблокирован: чекбокс не отмечен.');
+    }
+  }, true);
+
+  // --- 7. Сброс ошибки при изменении чекбокса ---
+  cb.addEventListener('change', function () {
+    if (cb.checked) {
+      if (err) err.hidden = true;
+      cb.removeAttribute('aria-invalid');
+    }
+  });
+
+  console.log('[pd-consent] ✅ Скрипт инициализирован. Попробуй отправить без галки — должно заблокироваться.');
+})();
+</script>
 </body>
 </html>
