@@ -1,419 +1,399 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Политика конфиденциальности | CaeleFly</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Политика обработки персональных данных | CaeleFly</title>
+<meta name="description" content="Политика обработки персональных данных сайта CaeleFly: какие данные собираются, зачем, как хранятся и как их удалить.">
+<meta name="theme-color" content="#070b14">
+<link rel="icon" type="image/x-icon" href="icon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS (совпадают с index.html) ============ */
+:root{
+  --bg:#070b14; --bg-2:#0a1020;
+  --ink:#e8eefc; --ink-dim:#9fb0cc; --ink-mute:#6b7d9c;
+  --cy:#38e1ff; --cy-2:#00b4e6; --vi:#8b7bff; --or:#ff8a4c;
+  --line:rgba(255,255,255,.09);
+  --line-2:rgba(255,255,255,.14);
+  --glass:linear-gradient(158deg,rgba(255,255,255,.062),rgba(255,255,255,.018));
+  --r:18px; --r-s:12px;
+  --shadow:0 22px 60px -24px rgba(0,0,0,.9);
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --maxw:920px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;
+  background:
+    radial-gradient(900px 620px at 12% -6%,rgba(56,225,255,.14),transparent 62%),
+    radial-gradient(760px 560px at 92% 8%,rgba(139,123,255,.13),transparent 60%),
+    radial-gradient(1000px 700px at 60% 108%,rgba(0,180,230,.10),transparent 62%),
+    linear-gradient(180deg,#070b14,#080d1a 40%,#060a12);
+}
+.grain{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.038;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+:focus-visible{outline:2px solid var(--cy);outline-offset:3px;border-radius:6px}
+::selection{background:rgba(56,225,255,.28)}
+.wrap{width:min(100% - 40px,var(--maxw));margin-inline:auto}
+.mono{font-family:var(--mono)}
+.grad{
+  background:linear-gradient(100deg,var(--cy),#a9f4ff 40%,var(--vi));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
 
-        :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #111827;
-            --bg-card: #1a2132;
-            --border: #2a3447;
-            --text-primary: #e5e7eb;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --accent: #ff6b35;
-            --accent-hover: #ff8555;
-            --mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Courier New', monospace;
-        }
+/* ============ HEADER ============ */
+.hdr{padding:20px 0;border-bottom:1px solid var(--line);background:rgba(8,12,22,.55);backdrop-filter:blur(14px) saturate(150%)}
+.hdr .wrap{display:flex;align-items:center;gap:16px;max-width:var(--maxw)}
+.logo{display:flex;align-items:center;gap:11px;font-weight:800;letter-spacing:-.02em;font-size:19px}
+.logo-ico{width:28px;height:28px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(56,225,255,.45))}
+.logo b{font-weight:800}
+.logo span{color:var(--cy)}
+.back{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-dim);
+  padding:9px 14px;border:1px solid var(--line-2);border-radius:11px;background:rgba(255,255,255,.04);transition:.2s}
+.back:hover{color:var(--ink);background:rgba(56,225,255,.10);border-color:rgba(56,225,255,.45)}
+.back svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.7;
-            min-height: 100vh;
-            background-image: 
-                radial-gradient(circle at 20% 10%, rgba(255, 107, 53, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
-        }
+/* ============ HERO ============ */
+.hero{padding:64px 0 40px}
+.badge{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--cy);border:1px solid rgba(56,225,255,.26);background:rgba(56,225,255,.06);
+  padding:7px 13px;border-radius:999px}
+h1{font-size:clamp(28px,4.4vw,44px);line-height:1.12;letter-spacing:-.03em;font-weight:800;margin:18px 0 0}
+.lead{color:var(--ink-dim);font-size:clamp(15px,1.5vw,17px);max-width:64ch;margin:16px 0 0}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.chip{font-family:var(--mono);font-size:11.5px;color:var(--ink-mute);border:1px solid var(--line);
+  padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.025)}
+.chip b{color:var(--ink-dim);font-weight:500}
 
-        .container {
-            max-width: 880px;
-            margin: 0 auto;
-            padding: 40px 24px 80px;
-        }
+/* ============ LAYOUT: TOC + CONTENT ============ */
+.doc-layout{
+  display:grid;grid-template-columns:240px 1fr;gap:40px;
+  padding:40px 0 80px;align-items:start;
+}
+.toc{
+  position:sticky;top:24px;
+  border:1px solid var(--line);border-radius:var(--r);
+  background:var(--glass);backdrop-filter:blur(12px);
+  padding:18px 16px;
+}
+.toc .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:toc}
+.toc li{counter-increment:toc}
+.toc a{display:flex;gap:10px;padding:8px 10px;border-radius:9px;font-size:13.5px;color:var(--ink-dim);transition:.18s;line-height:1.35}
+.toc a::before{content:counter(toc,decimal-leading-zero);font-family:var(--mono);font-size:10.5px;color:var(--cy);opacity:.7;flex:none;padding-top:2px}
+.toc a:hover{color:var(--ink);background:rgba(56,225,255,.07)}
 
-        /* Шапка с навигацией */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 60px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-        }
+.content{min-width:0}
 
-        .logo {
-            font-family: var(--mono);
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: 0.5px;
-            text-decoration: none;
-        }
+/* ============ DOC SECTIONS ============ */
+.doc-section{
+  position:relative;
+  border:1px solid var(--line);border-radius:var(--r);
+  background:var(--glass);backdrop-filter:blur(12px) saturate(140%);
+  padding:26px 28px 28px;margin-bottom:16px;
+  box-shadow:var(--shadow);
+  scroll-margin-top:24px;
+}
+.doc-section .n{
+  position:absolute;top:20px;right:24px;
+  font-family:var(--mono);font-size:11px;color:rgba(255,255,255,.16);
+}
+.doc-section h2{
+  margin:0 0 12px;font-size:19px;letter-spacing:-.02em;font-weight:600;
+  display:flex;align-items:baseline;gap:12px;
+}
+.doc-section h2::before{
+  content:"";width:4px;height:18px;border-radius:99px;flex:none;
+  background:linear-gradient(180deg,var(--cy),var(--vi));
+  box-shadow:0 0 10px rgba(56,225,255,.5);transform:translateY(2px);
+}
+.doc-section p{margin:0 0 12px;color:var(--ink-dim);font-size:14.5px}
+.doc-section p:last-child{margin-bottom:0}
+.doc-section ul,.doc-section ol{margin:0 0 12px;padding-left:22px;color:var(--ink-dim);font-size:14.5px}
+.doc-section li{margin-bottom:6px}
+.doc-section li::marker{color:var(--cy)}
+.doc-section strong{color:var(--ink);font-weight:600}
+.doc-section a{color:var(--cy);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.doc-section a:hover{color:#a9f4ff}
 
-        .logo span {
-            color: var(--accent);
-        }
+/* Акцент-плашки внутри текста */
+.callout{
+  display:flex;gap:12px;align-items:flex-start;
+  margin:14px 0 0;padding:14px 16px;
+  border:1px solid rgba(56,225,255,.28);border-radius:12px;
+  background:linear-gradient(160deg,rgba(56,225,255,.10),rgba(139,123,255,.05));
+  font-size:13.8px;color:var(--ink-dim);
+}
+.callout svg{width:19px;height:19px;flex:none;fill:none;stroke:var(--cy);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-top:2px;filter:drop-shadow(0 0 4px rgba(56,225,255,.4))}
+.callout b{color:var(--ink);font-weight:600;display:block;margin-bottom:2px}
 
-        .back-link {
-            font-family: var(--mono);
-            font-size: 13px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 8px 16px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
+/* Таблица (для сроков хранения и т.п.) */
+.doc-table{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:13.8px}
+.doc-table th,.doc-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.doc-table th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.doc-table td{color:var(--ink-dim)}
+.doc-table tr:last-child td{border-bottom:0}
 
-        .back-link:hover {
-            color: var(--accent);
-            border-color: var(--accent);
-            background: rgba(255, 107, 53, 0.05);
-        }
+/* Финальный контакт-блок */
+.contact-card{
+  margin-top:8px;padding:26px 28px;
+  border:1px solid rgba(56,225,255,.28);border-radius:var(--r);
+  background:linear-gradient(160deg,rgba(56,225,255,.11),rgba(139,123,255,.07));
+  backdrop-filter:blur(14px);box-shadow:var(--shadow);
+}
+.contact-card h2{margin:0 0 8px;font-size:20px;letter-spacing:-.02em}
+.contact-card p{margin:0 0 14px;color:var(--ink-dim);font-size:14.5px}
+.contact-card .mail{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:14.5px;color:var(--cy);
+  padding:10px 14px;border-radius:11px;
+  border:1px solid rgba(56,225,255,.35);background:rgba(56,225,255,.06);transition:.2s;
+}
+.contact-card .mail:hover{background:rgba(56,225,255,.12);border-color:rgba(56,225,255,.6)}
+.contact-card .mail svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
-        /* Заголовок документа */
-        .doc-header {
-            margin-bottom: 50px;
-        }
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--line);padding:34px 0 28px;background:rgba(5,8,15,.5);backdrop-filter:blur(10px)}
+.f-grid{display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.f-grid p{margin:6px 0 0;font-size:13px;color:var(--ink-mute);max-width:42ch}
+.f-bottom{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);
+  display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--ink-mute)}
+.f-bottom span:last-child{margin-left:auto;opacity:.65}
 
-        .doc-label {
-            font-family: var(--mono);
-            font-size: 12px;
-            color: var(--accent);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .doc-label::before {
-            content: '';
-            display: inline-block;
-            width: 24px;
-            height: 1px;
-            background: var(--accent);
-        }
-
-        h1 {
-            font-size: 36px;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
-        }
-
-        .doc-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            font-family: var(--mono);
-            font-size: 13px;
-            color: var(--text-muted);
-            padding: 16px 20px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            border-left: 3px solid var(--accent);
-        }
-
-        .doc-meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .doc-meta-item strong {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        /* Секции */
-        .section {
-            margin-bottom: 40px;
-            padding: 28px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            transition: border-color 0.2s ease;
-        }
-
-        .section:hover {
-            border-color: rgba(255, 107, 53, 0.3);
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 18px;
-        }
-
-        .section-number {
-            font-family: var(--mono);
-            font-size: 14px;
-            color: var(--accent);
-            font-weight: 600;
-            min-width: 32px;
-        }
-
-        h2 {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: -0.2px;
-        }
-
-        .section p {
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-size: 15px;
-        }
-
-        .section p:last-child {
-            margin-bottom: 0;
-        }
-
-        .section ul {
-            list-style: none;
-            padding: 0;
-            margin: 12px 0;
-        }
-
-        .section ul li {
-            position: relative;
-            padding: 8px 0 8px 24px;
-            color: var(--text-secondary);
-            font-size: 15px;
-            border-bottom: 1px dashed var(--border);
-        }
-
-        .section ul li:last-child {
-            border-bottom: none;
-        }
-
-        .section ul li::before {
-            content: '▸';
-            position: absolute;
-            left: 0;
-            top: 8px;
-            color: var(--accent);
-            font-size: 12px;
-        }
-
-        .section ul li strong {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        /* Контактный блок */
-        .contact-block {
-            margin-top: 50px;
-            padding: 28px;
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.08) 0%, rgba(255, 107, 53, 0.02) 100%);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            border-left: 3px solid var(--accent);
-        }
-
-        .contact-block h2 {
-            margin-bottom: 16px;
-        }
-
-        .contact-block p {
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            font-size: 15px;
-        }
-
-        .operator-tag {
-            display: inline-block;
-            font-family: var(--mono);
-            font-size: 13px;
-            color: var(--accent);
-            padding: 6px 12px;
-            background: rgba(255, 107, 53, 0.1);
-            border: 1px solid rgba(255, 107, 53, 0.3);
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        /* Футер */
-        .footer {
-            margin-top: 80px;
-            padding-top: 30px;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            font-family: var(--mono);
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.8;
-        }
-
-        .footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Адаптив */
-        @media (max-width: 640px) {
-            .container {
-                padding: 24px 16px 60px;
-            }
-
-            h1 {
-                font-size: 26px;
-            }
-
-            .section {
-                padding: 20px;
-            }
-
-            .doc-meta {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .top-bar {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-        }
-    </style>
+/* ============ RESPONSIVE ============ */
+@media (max-width:860px){
+  .doc-layout{grid-template-columns:1fr;gap:20px;padding:24px 0 60px}
+  .toc{position:static}
+  .doc-section{padding:22px 20px}
+  .doc-section .n{top:16px;right:18px}
+  .hero{padding:40px 0 24px}
+  .f-bottom span:last-child{margin-left:0}
+}
+@media (max-width:600px){
+  .doc-section h2{font-size:17px}
+  .contact-card{padding:20px 18px}
+  .back{padding:8px 11px;font-size:13px}
+  .back span{display:none} /* оставляем только иконку на узких */
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition-duration:.001ms!important;animation-duration:.001ms!important}
+}
+</style>
 </head>
 <body>
 
-<div class="container">
+<div class="grain" aria-hidden="true"></div>
 
-    <!-- Шапка -->
-    <div class="top-bar">
-        <a href="/" class="logo">Caele<span>Fly</span></a>
-        <a href="/" class="back-link">← На главную</a>
-    </div>
+<header class="hdr">
+  <div class="wrap">
+    <a href="/" class="logo">
+      <img class="logo-ico" src="icon.ico" alt="CaeleFly">
+      <span>Caele<b>Fly</b></span>
+    </a>
+    <a class="back" href="/">
+      <svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg>
+      <span>На главную</span>
+    </a>
+  </div>
+</header>
 
-    <!-- Заголовок документа -->
-    <div class="doc-header">
-        <div class="doc-label">Legal Document</div>
-        <h1>Политика в отношении обработки персональных данных</h1>
-        <div class="doc-meta">
-            <div class="doc-meta-item">
-                <strong>Сайт:</strong> caelefly.ru
+<main>
+  <div class="wrap">
+
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <span class="badge"><i style="width:6px;height:6px;border-radius:50%;background:var(--cy);box-shadow:0 0 0 0 rgba(56,225,255,.7)"></i>Документ</span>
+      <h1>Политика обработки <span class="grad">персональных данных</span></h1>
+      <p class="lead">Настоящая Политика описывает, какие персональные данные собираются при использовании сайта и приложения CaeleFly, с какой целью, как они хранятся и как вы можете реализовать свои права.</p>
+      <div class="meta-row">
+        <span class="chip"><b>Редакция:</b> 2026-11-24</span>
+        <span class="chip"><b>Вступает в силу:</b> 24.11.2026</span>
+        <span class="chip"><b>Язык:</b> Русский</span>
+      </div>
+    </section>
+
+    <!-- ================= DOC ================= -->
+    <div class="doc-layout">
+
+      <!-- TOC -->
+      <nav class="toc" aria-label="Оглавление">
+        <p class="t">Содержание</p>
+        <ol>
+          <li><a href="#s1">Общие положения</a></li>
+          <li><a href="#s2">Какие данные мы собираем</a></li>
+          <li><a href="#s3">Цели обработки</a></li>
+          <li><a href="#s4">Правовые основания</a></li>
+          <li><a href="#s5">Хранение и защита</a></li>
+          <li><a href="#s6">Передача третьим лицам</a></li>
+          <li><a href="#s7">Cookies и аналитика</a></li>
+          <li><a href="#s8">Права пользователя</a></li>
+          <li><a href="#s9">Дети</a></li>
+          <li><a href="#s10">Изменения политики</a></li>
+          <li><a href="#s11">Контакты</a></li>
+        </ol>
+      </nav>
+
+      <!-- CONTENT -->
+      <div class="content">
+
+        <section class="doc-section" id="s1">
+          <span class="n mono">01</span>
+          <h2>Общие положения</h2>
+          <p>Настоящая Политика обработки персональных данных (далее — Политика) определяет порядок обработки и меры по обеспечению безопасности персональных данных, предпринимаемые оператором сайта и приложения <strong>CaeleFly</strong> (далее — Оператор).</p>
+          <p>Используя сайт и приложение, вы подтверждаете, что ознакомились с настоящей Политикой и согласны с её условиями. Если вы не согласны — пожалуйста, прекратите использование сервиса.</p>
+          <div class="callout">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+            <div>
+              <b>Коротко</b>
+              Мы собираем только те данные, которые вы отправляете сами через форму обратной связи (имя, email, тема, текст сообщения), и обрабатываем их исключительно для ответа на ваше обращение.
             </div>
-            <div class="doc-meta-item">
-                <strong>Версия:</strong> 1.0
-            </div>
-            <div class="doc-meta-item">
-                <strong>Дата:</strong> 24.11.2026
-            </div>
-            <div class="doc-meta-item">
-                <strong>ФЗ:</strong> 152-ФЗ
-            </div>
-        </div>
-    </div>
+          </div>
+        </section>
 
-    <!-- Секции -->
-    <div class="section">
-        <div class="section-header">
-            <span class="section-number">01</span>
-            <h2>Общие положения</h2>
-        </div>
-        <p>Настоящая Политика конфиденциальности (далее — Политика) действует в отношении всей информации, которую оператор (Владелец сайта caelefly.ru, далее — Оператор) может получить о Пользователе во время использования сайта и формы обратной связи.</p>
-        <p>Обработка персональных данных осуществляется Оператором в строгом соответствии с Федеральным законом от 27.07.2006 N 152-ФЗ «О персональных данных».</p>
-    </div>
+        <section class="doc-section" id="s2">
+          <span class="n mono">02</span>
+          <h2>Какие данные мы собираем</h2>
+          <p>Оператор обрабатывает следующие категории данных:</p>
+          <ul>
+            <li><strong>Данные, которые вы предоставляете добровольно</strong> через форму обратной связи: имя, адрес электронной почты, тема обращения, текст сообщения.</li>
+            <li><strong>Технические данные</strong>, автоматически передаваемые браузером: IP-адрес, тип и версия браузера, операционная система, дата и время обращения, адрес запрошенной страницы.</li>
+            <li><strong>Метаданные согласия</strong>: факт и время предоставления согласия на обработку персональных данных, версия Политики, действовавшая на момент согласия.</li>
+          </ul>
+          <p>Мы <strong>не собираем</strong> специальные категории персональных данных (раса, национальность, состояние здоровья, религиозные убеждения и т.п.) и биометрические данные.</p>
+        </section>
 
-    <div class="section">
-        <div class="section-header">
-            <span class="section-number">02</span>
-            <h2>Перечень собираемых персональных данных</h2>
-        </div>
-        <p>С помощью формы обратной связи на сайте caelefly.ru Оператор может собирать следующие данные:</p>
-        <ul>
-            <li><strong>Имя</strong> — для обращения к Пользователю;</li>
-            <li><strong>Адрес электронной почты (Email)</strong> — для отправки ответа на обращение;</li>
-            <li><strong>Тема и текст сообщения</strong> — суть запроса Пользователя.</li>
-        </ul>
-    </div>
+        <section class="doc-section" id="s3">
+          <span class="n mono">03</span>
+          <h2>Цели обработки</h2>
+          <p>Персональные данные обрабатываются исключительно в следующих целях:</p>
+          <ul>
+            <li>ответ на ваше обращение через форму обратной связи;</li>
+            <li>уточнение деталей обращения и обратная связь по существу вопроса;</li>
+            <li>рассмотрение сообщений об ошибках и предложений по улучшению приложения;</li>
+            <li>обеспечение безопасности сайта и предотвращение злоупотреблений (спам, автоматизированные атаки).</li>
+          </ul>
+          <p>Оператор не использует персональные данные для рекламы, профилирования или передачи в маркетинговые сервисы.</p>
+        </section>
 
-    <div class="section">
-        <div class="section-header">
-            <span class="section-number">03</span>
-            <h2>Цели обработки персональных данных</h2>
-        </div>
-        <p>Персональные данные Пользователя собираются исключительно для следующих целей:</p>
-        <ul>
-            <li>Обработка входящих обращений и запросов через форму обратной связи;</li>
-            <li>Направление ответа на запрос Пользователя по указанному им email;</li>
-            <li>Соблюдение требований законодательства РФ.</li>
-        </ul>
-        <p>Сбор анонимных статистических данных о работе сайта (если используется) не подпадает под действие настоящей Политики и регулируется отдельными соглашениями.</p>
-    </div>
+        <section class="doc-section" id="s4">
+          <span class="n mono">04</span>
+          <h2>Правовые основания</h2>
+          <p>Обработка персональных данных осуществляется на основании:</p>
+          <ul>
+            <li><strong>вашего согласия</strong>, выраженного путём установки отметки в чекбоксе согласия при отправке формы обратной связи;</li>
+            <li>необходимости исполнения обязанностей, возложенных на Оператора законодательством в области персональных данных.</li>
+          </ul>
+          <p>Согласие может быть отозвано в любой момент — см. раздел <a href="#s8">«Права пользователя»</a>.</p>
+        </section>
 
-    <div class="section">
-        <div class="section-header">
-            <span class="section-number">04</span>
-            <h2>Порядок и условия обработки данных</h2>
-        </div>
-        <p>Обработка персональных данных Пользователя осуществляется с его прямого согласия, выраженного путем проставления соответствующей галочки (чекбокса) в форме обратной связи.</p>
-        <p>Оператор не передает персональные данные третьим лицам, за исключением случаев, предусмотренных законодательством РФ. Данные хранятся на территории Российской Федерации.</p>
-    </div>
+        <section class="doc-section" id="s5">
+          <span class="n mono">05</span>
+          <h2>Хранение и защита</h2>
+          <p>Персональные данные хранятся не дольше, чем этого требуют цели обработки, либо до отзыва согласия субъектом персональных данных.</p>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Категория данных</th><th>Срок хранения</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Обращения через форму связи</td><td>до 12 месяцев с момента последнего взаимодействия</td></tr>
+              <tr><td>Метаданные согласия</td><td>до 3 лет с момента предоставления согласия</td></tr>
+              <tr><td>Технические логи</td><td>до 90 дней</td></tr>
+            </tbody>
+          </table>
+          <p style="margin-top:14px">Для защиты данных применяются организационные и технические меры: ограничение доступа, шифрование канала передачи (HTTPS), резервное копирование и защита от несанкционированного доступа.</p>
+        </section>
 
-    <div class="section">
-        <div class="section-header">
-            <span class="section-number">05</span>
-            <h2>Сроки обработки и хранения данных</h2>
-        </div>
-        <p>Персональные данные обрабатываются до момента достижения целей обработки (отправка ответа) или до момента отзыва Пользователем своего согласия на обработку персональных данных.</p>
-    </div>
+        <section class="doc-section" id="s6">
+          <span class="n mono">06</span>
+          <h2>Передача третьим лицам</h2>
+          <p>Оператор не продаёт и не передаёт персональные данные третьим лицам, за исключением случаев:</p>
+          <ul>
+            <li>когда это необходимо для обработки обращения через сервис доставки форм (например, Formspree), действующий по поручению Оператора;</li>
+            <li>когда передача требуется по законному запросу уполномоченных государственных органов.</li>
+          </ul>
+          <p>Сервисы-обработчики обязуются обрабатывать данные только в объёме и в целях, необходимых для оказания услуги, и обеспечивать их конфиденциальность.</p>
+        </section>
 
-    <div class="section">
-        <div class="section-header">
-            <span class="section-number">06</span>
-            <h2>Права Пользователя</h2>
-        </div>
-        <p>Пользователь имеет право:</p>
-        <ul>
-            <li>Получать информацию о фактах и способах обработки своих персональных данных;</li>
-            <li>Требовать уточнения, блокирования или уничтожения своих персональных данных;</li>
-            <li>Отозвать согласие на обработку персональных данных, направив Оператору письменное или электронное уведомление.</li>
-        </ul>
-    </div>
+        <section class="doc-section" id="s7">
+          <span class="n mono">07</span>
+          <h2>Cookies и аналитика</h2>
+          <p>Сайт может использовать технические cookies, необходимые для корректной работы интерфейса и защиты формы от спама. Такие cookies не идентифицируют вас как личность и не используются для рекламы.</p>
+          <p>Вы можете отключить cookies в настройках браузера — это может повлиять на работу отдельных элементов сайта, но не лишит вас возможности отправить обращение.</p>
+        </section>
 
-    <!-- Контактный блок -->
-    <div class="contact-block">
-        <div class="section-header">
-            <span class="section-number">07</span>
-            <h2>Контактная информация</h2>
-        </div>
-        <p>По всем вопросам, связанным с обработкой персональных данных и работой сайта caelefly.ru, вы можете связаться с Оператором через форму обратной связи на сайте или по электронной почте, указанной в контактных данных.</p>
-        <div class="operator-tag">Оператор: DzyundzyaRV / DzyundzyaRV@caelefly.ru</div>
-    </div>
+        <section class="doc-section" id="s8">
+          <span class="n mono">08</span>
+          <h2>Права пользователя</h2>
+          <p>В отношении своих персональных данных вы имеете право:</p>
+          <ul>
+            <li>получить информацию о том, какие ваши данные обрабатываются и с какой целью;</li>
+            <li>требовать уточнения, блокирования или уничтожения данных, если они неполны, устарели, неточны или незаконно получены;</li>
+            <li>отозвать согласие на обработку персональных данных в любой момент;</li>
+            <li>обратиться с жалобой в уполномоченный орган по защите прав субъектов персональных данных.</li>
+          </ul>
+          <p>Для реализации любого из прав направьте запрос на адрес, указанный в разделе <a href="#s11">«Контакты»</a>. Мы ответим в течение 30 календарных дней.</p>
+        </section>
 
-    <!-- Футер -->
-    <div class="footer">
-        <div>CaeleFly · Профессиональный инструмент для операторов БПЛА и геодезистов</div>
-    </div>
+        <section class="doc-section" id="s9">
+          <span class="n mono">09</span>
+          <h2>Дети</h2>
+          <p>Сайт и приложение не предназначены для лиц младше 18 лет. Оператор сознательно не собирает персональные данные несовершеннолетних. Если вам стало известно, что ребёнок предоставил нам свои данные, свяжитесь с нами — мы удалим их.</p>
+        </section>
 
-</div>
+        <section class="doc-section" id="s10">
+          <span class="n mono">10</span>
+          <h2>Изменения политики</h2>
+          <p>Оператор вправе вносить изменения в настоящую Политику. Актуальная редакция всегда доступна на этой странице. Дата последнего обновления указана в шапке документа.</p>
+          <p>При существенных изменениях, затрагивающих объём обрабатываемых данных или цели обработки, мы уведомим пользователей дополнительно — например, баннером на сайте.</p>
+        </section>
+
+        <!-- ================= CONTACTS ================= -->
+        <section class="contact-card" id="s11">
+          <h2>Контакты</h2>
+          <p>По любым вопросам, связанным с обработкой персональных данных, а также для отзыва согласия — напишите нам:</p>
+          <a class="mail" href="mailto:DzyundzyaRV@caelefly.ru">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            DzyundzyaRV@caelefly.ru
+          </a>
+        </section>
+
+      </div><!-- /content -->
+    </div><!-- /doc-layout -->
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div>
+        <a href="/" class="logo">
+          <img class="logo-ico" src="icon.ico" alt="CaeleFly">
+          <span>Caele<b>Fly</b></span>
+        </a>
+        <p>Профессиональный инструмент для операторов БПЛА и геодезистов.</p>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <span>Версия 1.3.0.0 · Автор: DzyundzyaRV · 2026</span>
+      <span>Не аффилировано с DJI. DJI FLY — товарный знак SZ DJI Technology.</span>
+    </div>
+  </div>
+</footer>
 
 </body>
 </html>
