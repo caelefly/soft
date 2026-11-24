@@ -816,7 +816,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
 
 </style>
 </head>
-<body>
+<body data-version="1.3.0.0" data-repo="caelefly/soft">
 
 <div class="progress"><i id="bar"></i></div>
 <canvas id="terrain" aria-hidden="true"></canvas>
@@ -836,7 +836,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
       <a href="#download">Скачать</a>
 	  <a href="#contact">Связаться</a>
     </nav>
-    <span class="ver mono">v1.3.0.0</span>
+    <span class="ver mono" data-ver>v1.3.0.0</span>
     <button class="burger" id="burger" aria-label="Меню" aria-expanded="false"><i></i></button>
   </div>
 </header>
@@ -853,7 +853,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
         <p class="lead" data-reveal style="--d:120ms">Десктопное приложение для планирования миссий DJI FLY и анализа аэрофотосъёмки: рельеф DEM/DSM, честный GSD, перекрытия и загрузка KMZ прямо на пульт.</p>
         <div class="cta" data-reveal style="--d:180ms">
         
-		    <a class="btn btn-p" href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip">
+		    <a class="btn btn-p" href="#" data-download>
 		   
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>
             Скачать для Windows
@@ -992,16 +992,16 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
         </ul>
 
         <div class="dl-panel" id="download" data-reveal style="--d:120ms">
-          <h3>CaeleFly 1.3.0.0</h3>
+          <h3>CaeleFly <span data-ver>1.3.0.0</span></h3>
           <p>Портативная сборка для Windows. Распакуйте архив и запустите приложение - установка не требуется.</p>
           
-		   <a class="btn btn-p" href="https://github.com/caelefly/soft/releases/download/v1.3.0.0/CaeleFly.v1.3.0.0.zip">
+		   <a class="btn btn-p" href="#" data-download>
 		    
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 11 5 5 5-5"/><path d="M4 20h16"/></svg>
             Скачать .zip
           </a>
           <div class="dl-meta">
-  <div><span>Версия</span><b>1.3.0.0</b></div>
+  <div><span>Версия</span><b data-ver>1.3.0.0</b></div>
   <div><span>Платформа</span><b>Windows x64</b></div>
   <div><span>Формат миссий</span><b>KMZ (DJI FLY)</b></div>
   <div><span>Лицензия</span><b>Shareware</b></div>
@@ -1109,6 +1109,8 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
   <!-- доказательства согласия: уйдут вместе с полями формы -->
   <input type="hidden" name="consent_policy_version" value="2026-11-24">
   <input type="hidden" name="consent_timestamp" id="consent-ts" value="">
+  <input type="hidden" name="consent_user_agent" id="consent-ua" value="">
+  <input type="hidden" name="consent_page" id="consent-page" value="">
 </div>
 
         <div class="cf-foot">
@@ -1151,7 +1153,7 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
       </div>
     </div>
     <div class="f-bottom">
-      <span>Версия 1.3.0.0 · Автор: DzyundzyaRV · 2026</span>
+      <span>Версия <span data-ver>1.3.0.0</span> · Автор: DzyundzyaRV · 2026</span>
       <span>Не аффилировано с DJI. DJI FLY - товарный знак SZ DJI Technology.</span>
     </div>
   </div>
@@ -1832,178 +1834,161 @@ if (heroShot) heroShot.addEventListener('click', () => {
   lb.classList.add('open');
   document.body.style.overflow = 'hidden';
 });
-
-/* === ПРИНУДИТЕЛЬНАЯ ВАЛИДАЦИЯ ПЕРЕД ОТПРАВКОЙ === */
-(function forceValidation(){
-  const form = document.getElementById('contactForm');
-  if(!form) return;
-
-  // Перехватываем submit на фазе capture, чтобы сработать РАНЬШЕ библиотеки Formspree
-  form.addEventListener('submit', function(e){
-    const name = form.querySelector('[name="name"]');
-    const email = form.querySelector('[name="email"]');
-    const message = form.querySelector('[name="message"]');
-
-    const nameVal = name ? name.value.trim() : '';
-    const emailVal = email ? email.value.trim() : '';
-    const messageVal = message ? message.value.trim() : '';
-
-    let firstBad = null;
-
-    // Сброс предыдущих ошибок
-    [name, email, message].forEach(el => {
-      if(el) el.removeAttribute('aria-invalid');
-    });
-
-    // Проверки
-    if(!nameVal){
-      if(name) name.setAttribute('aria-invalid','true');
-      firstBad = firstBad || name;
-    }
-    if(!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){
-      if(email) email.setAttribute('aria-invalid','true');
-      firstBad = firstBad || email;
-    }
-    if(!messageVal){
-      if(message) message.setAttribute('aria-invalid','true');
-      firstBad = firstBad || message;
-    }
-
-    if(firstBad){
-      // Останавливаем отправку — библиотека Formspree не получит событие
-      e.preventDefault();
-      e.stopImmediatePropagation();
-
-      firstBad.focus();
-      firstBad.scrollIntoView({behavior:'smooth', block:'center'});
-      return false;
-    }
-  }, true);
-})();
-
-/* ============================================================
-   6. CONTACT FORM (Formspree)
-   ============================================================ */
-(function contactForm(){
-  const form = document.getElementById('contactForm');
-  if(!form) return;
-
-  // плавный скролл к секции из навигации/футера
-  // (если добавил ссылку #contact — достаточно нативного scroll-behavior:smooth)
-  document.querySelectorAll('a[href="#contact"]').forEach(a=>{
-    a.addEventListener('click', e=>{
-      e.preventDefault();
-      document.getElementById('contact')?.scrollIntoView({behavior:'smooth', block:'start'});
-    });
-  });
-
-  // Обработка результата отправки.
-  // SDK @formspree/ajax выставляет атрибуты data-fs-form-status на <form>,
-  // а также наполняет [data-fs-error] и [data-fs-success].
-  // Здесь — только UX-обвязка.
-  const observer = new MutationObserver(() => {
-    const status = form.getAttribute('data-fs-form-status');
-
-    if(status === 'success'){
-      form.reset();
-      // дать пользователю увидеть подтверждение
-      form.querySelector('.cf-success')?.scrollIntoView({behavior:'smooth', block:'center'});
-      // через 8 сек вернуть форму (чтобы можно было отправить ещё одно сообщение)
-      clearTimeout(form._resetT);
-      form._resetT = setTimeout(()=>{
-        form.removeAttribute('data-fs-form-status');
-      }, 8000);
-    }
-
-    if(status === 'error'){
-      // фокус на первое невалидное поле, если такое есть
-      const bad = form.querySelector('[aria-invalid="true"]');
-      bad?.focus({preventScroll:true});
-    }
-  });
-  observer.observe(form, {attributes:true, attributeFilter:['data-fs-form-status']});
-  })();
 })();
 </script>
 <script>
   window.formspree = window.formspree || function () {
     (formspree.q = formspree.q || []).push(arguments);
   };
-  formspree('initForm', { formElement: '#contactForm', formId: 'maeolpwa' });
 </script>
-<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer
+        onload="formspree('initForm',{formElement:'#contactForm',formId:'maeolpwa'})"></script>
+
 <script>
-(function () {
+/* ============================================================
+   CONTACT FORM — единая валидация (поля + согласие ПДн)
+   Работает в capture-фазе, чтобы гарантированно сработать
+   раньше Formspree SDK.
+   ============================================================ */
+(function contactFormUnified(){
   'use strict';
-
-  // --- 1. Находим форму ---
-  // Ищем либо по id, либо первую <form> на странице.
-  // Если у тебя форма обёрнута в <div>, а не в <form> — см. блок "Если формы нет" ниже.
-  const form = document.querySelector('#contact-form') || document.querySelector('form');
-  if (!form) {
-    console.warn('[pd-consent] ❌ Форма не найдена. Проверь: есть ли <form> на странице или id="contact-form".');
+  const form = document.getElementById('contactForm');
+  if(!form){
+    console.warn('[contact] Форма #contactForm не найдена');
     return;
   }
-  console.log('[pd-consent] ✅ Форма найдена:', form);
 
-  // --- 2. Находим чекбокс ---
-  const cb = form.querySelector('#pd-consent');
-  if (!cb) {
-    console.warn('[pd-consent] ❌ Чекбокс #pd-consent не найден внутри формы.');
-    return;
+  const nameEl  = form.querySelector('[name="name"]');
+  const emailEl = form.querySelector('[name="email"]');
+  const msgEl   = form.querySelector('[name="message"]');
+  const cb      = form.querySelector('#pd-consent');
+  const err     = form.querySelector('#pd-consent-error');
+  const tsEl    = form.querySelector('#consent-ts');
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  /* ---- timestamp согласия пишем В МОМЕНТ клика по чекбоксу ---- */
+  if(cb){
+    cb.addEventListener('change', () => {
+  if(cb.checked){
+    if(tsEl) tsEl.value = new Date().toISOString();
+    const ua = document.getElementById('consent-ua');
+    const pg = document.getElementById('consent-page');
+    if(ua) ua.value = navigator.userAgent;
+    if(pg) pg.value = location.href;
+    if(err) err.hidden = true;
+    cb.removeAttribute('aria-invalid');
+  } else {
+    if(tsEl) tsEl.value = '';
   }
-  console.log('[pd-consent] ✅ Чекбокс найден.');
+});
+  }
 
-  // --- 3. Находим блок ошибки и скрытое поле с таймстампом ---
-  const err = form.querySelector('#pd-consent-error');
-  const ts  = form.querySelector('#consent-ts');
+  /* ---- единый обработчик submit (capture) ---- */
+  form.addEventListener('submit', (e) => {
+    // сброс предыдущих ошибок
+    [nameEl, emailEl, msgEl].forEach(el => el && el.removeAttribute('aria-invalid'));
+    if(cb) cb.removeAttribute('aria-invalid');
+    if(err) err.hidden = true;
 
-  // --- 4. Функция блокировки отправки ---
-  function blockIfNoConsent(e) {
-    if (cb.checked) {
-      // согласие есть — пропускаем, записываем момент
-      if (ts) ts.value = new Date().toISOString();
-      console.log('[pd-consent] ✅ Согласие получено, отправка разрешена. timestamp =', ts && ts.value);
-      return true;
+    const nameVal    = nameEl  ? nameEl.value.trim()  : '';
+    const emailVal   = emailEl ? emailEl.value.trim() : '';
+    const msgVal     = msgEl   ? msgEl.value.trim()   : '';
+    const consentVal = cb ? cb.checked : false;
+
+    let firstBad = null;
+
+    if(!nameVal){
+      if(nameEl) nameEl.setAttribute('aria-invalid','true');
+      firstBad = firstBad || nameEl;
     }
-    // согласия нет — блокируем
-    e.preventDefault();
-    e.stopImmediatePropagation(); // глушим все остальные обработчики submit/click
-    if (err) err.hidden = false;
-    cb.setAttribute('aria-invalid', 'true');
-    cb.focus();
-    console.warn('[pd-consent] ⛔ Отправка заблокирована: чекбокс не отмечен.');
-    return false;
-  }
+    if(!emailVal || !EMAIL_RE.test(emailVal)){
+      if(emailEl) emailEl.setAttribute('aria-invalid','true');
+      firstBad = firstBad || emailEl;
+    }
+    if(!msgVal){
+      if(msgEl) msgEl.setAttribute('aria-invalid','true');
+      firstBad = firstBad || msgEl;
+    }
+    if(!consentVal){
+      if(err) err.hidden = false;
+      if(cb)  cb.setAttribute('aria-invalid','true');
+      firstBad = firstBad || cb;
+    }
 
-  // --- 5. Вешаем на submit (capture: true — срабатывает раньше всех) ---
-  form.addEventListener('submit', blockIfNoConsent, true);
-
-  // --- 6. Дополнительно: перехватываем click на любой кнопке внутри формы ---
-  // Это нужно, если форма отправляется не через submit, а через обработчик click
-  // (так делают Formspree, EmailJS, самописные fetch-обработчики).
-  form.addEventListener('click', function (e) {
-    const btn = e.target.closest('button, input[type="submit"]');
-    if (!btn) return;
-    if (!cb.checked) {
+    if(firstBad){
       e.preventDefault();
-      e.stopImmediatePropagation();
-      if (err) err.hidden = false;
-      cb.setAttribute('aria-invalid', 'true');
-      cb.focus();
-      console.warn('[pd-consent] ⛔ Click заблокирован: чекбокс не отмечен.');
+      e.stopImmediatePropagation();   // блокируем Formspree SDK
+      firstBad.focus();
+      firstBad.scrollIntoView({behavior:'smooth', block:'center'});
+      return false;
     }
-  }, true);
 
-  // --- 7. Сброс ошибки при изменении чекбокса ---
-  cb.addEventListener('change', function () {
-    if (cb.checked) {
-      if (err) err.hidden = true;
-      cb.removeAttribute('aria-invalid');
+    // всё ок — фиксируем финальный timestamp (на случай если change не сработал)
+    if(tsEl && consentVal && !tsEl.value){
+      tsEl.value = new Date().toISOString();
+    }
+  }, true); // ← capture: true
+
+  /* ---- UX после ответа Formspree ---- */
+  const observer = new MutationObserver(() => {
+    const status = form.getAttribute('data-fs-form-status');
+
+    if(status === 'success'){
+      form.reset();
+      if(tsEl) tsEl.value = '';           // очищаем timestamp
+      if(cb)   cb.checked = false;
+      form.querySelector('.cf-success')?.scrollIntoView({behavior:'smooth', block:'center'});
+
+      clearTimeout(form._resetT);
+      form._resetT = setTimeout(() => {
+        form.removeAttribute('data-fs-form-status');
+      }, 8000);
+    }
+
+    if(status === 'error'){
+      const bad = form.querySelector('[aria-invalid="true"]');
+      bad?.focus({preventScroll:true});
     }
   });
+  observer.observe(form, {attributes:true, attributeFilter:['data-fs-form-status']});
+})();
+</script>
+<script>
+/* ============================================================
+   VERSION SYNC — единый источник версии.
+   Меняешь только <body data-version="..."> — остальное обновится.
+   ============================================================ */
+(function versionSync(){
+  'use strict';
+  const body    = document.body;
+  const version = (body.dataset.version || '').trim();
+  if(!version) return;
 
-  console.log('[pd-consent] ✅ Скрипт инициализирован. Попробуй отправить без галки — должно заблокироваться.');
+  const repo    = (body.dataset.repo || '').trim();
+  const VER_RAW = version.replace(/^v/i, '');       // "1.3.0.0"
+  const VER_TAG = 'v' + VER_RAW;                    // "v1.3.0.0"
+
+  // 1) Все элементы с [data-ver]
+  document.querySelectorAll('[data-ver]').forEach(el => {
+    // у шапки (класс .ver) — с префиксом "v", у остальных — без
+    el.textContent = el.classList.contains('ver') ? VER_TAG : VER_RAW;
+  });
+
+  // 2) Кнопки скачивания — собираем URL из repo + version
+  if(repo){
+    const zip = `CaeleFly.v${VER_RAW}.zip`;
+    const url = `https://github.com/${repo}/releases/download/${VER_TAG}/${zip}`;
+    document.querySelectorAll('[data-download]').forEach(btn => {
+      btn.setAttribute('href', url);
+    });
+  }
+
+  // 3) Обновляем _subject формы (опционально)
+  const subj = document.querySelector('input[name="_subject"]');
+  if(subj){
+    subj.value = `CaeleFly v${VER_RAW} — новое сообщение с сайта`;
+  }
 })();
 </script>
 </body>
