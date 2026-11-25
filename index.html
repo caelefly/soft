@@ -2022,12 +2022,6 @@ if (heroShot) heroShot.addEventListener('click', () => {
             event.preventDefault();
         }
     });
-
-    // 3. Блокируем выделение текста (чтобы нельзя было скопировать Ctrl+C)
-    document.addEventListener('selectstart', event => {
-        event.preventDefault();
-    });
-    
 </script>
 </body>
 </html>
