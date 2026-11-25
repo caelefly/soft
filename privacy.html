@@ -394,5 +394,43 @@ footer{border-top:1px solid var(--line);padding:34px 0 28px;background:rgba(5,8,
   </div>
 </footer>
 
+<script>
+    // 1. Блокируем вызов контекстного меню (Правая кнопка мыши)
+    document.addEventListener('contextmenu', event => {
+        event.preventDefault();
+    });
+
+    // 2. Блокируем горячие клавиши
+    document.addEventListener('keydown', event => {
+        // Блокируем F12
+        if (event.key === 'F12') {
+            event.preventDefault();
+        }
+        
+        // Блокируем Ctrl+U (Просмотр кода)
+        if (event.ctrlKey && !event.shiftKey && (event.key === 'u' || event.key === 'U')) {
+            event.preventDefault();
+        }
+        
+        // Блокируем Ctrl+Shift+I, J, C (Открытие DevTools/Консоли)
+        if (event.ctrlKey && event.shiftKey) {
+            if (['i', 'I', 'j', 'J', 'c', 'C'].includes(event.key)) {
+                event.preventDefault();
+            }
+        }
+        
+        // Блокируем Ctrl+S (Сохранить страницу как...) - опционально
+        if (event.ctrlKey && (event.key === 's' || event.key === 'S')) {
+            event.preventDefault();
+        }
+    });
+
+    // 3. Блокируем выделение текста (чтобы нельзя было скопировать Ctrl+C)
+    document.addEventListener('selectstart', event => {
+        event.preventDefault();
+    });
+    
+</script>
+  
 </body>
 </html>
