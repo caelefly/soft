@@ -554,6 +554,18 @@ section#contact::before{
   font-size:14px;
   color:#d6ffe8;
   backdrop-filter:blur(8px);
+  /* плавность */
+  opacity:0;
+  transform:translateY(-6px);
+  transition:opacity .35s ease, transform .35s ease;
+}
+.cf-success.is-visible{
+  opacity:1;
+  transform:translateY(0);
+}
+.cf-success.is-hiding{
+  opacity:0;
+  transform:translateY(-6px);
 }
 .cf-success svg{
   width:22px;height:22px;flex:none;
@@ -573,10 +585,6 @@ section#contact::before{
   line-height:1.45;
 }
 
-
-.contact-form[data-fs-form-status="success"] .cf-foot,
-.contact-form[data-fs-form-status="success"] .cf-field,
-.contact-form[data-fs-form-status="success"] .cf-row{ display:none; }
 
 .cf-error-global{
   display:none;
@@ -1044,7 +1052,8 @@ footer{border-top:1px solid var(--line);padding:44px 0 34px;margin-top:30px;back
     </div>
 
     <div class="contact-wrap">
-      <form class="contact-form" id="contactForm" novalidate>
+      <form class="contact-form" id="contactForm" novalidate
+      action="https://formspree.io/f/maeolpwa" method="POST">
         <!-- Formspree: служебные поля -->
         <input type="hidden" name="_subject" value="CaeleFly — новое сообщение с сайта">
         <input type="hidden" name="_language" value="ru">
@@ -1836,21 +1845,13 @@ if (heroShot) heroShot.addEventListener('click', () => {
 });
 })();
 </script>
-<script>
-  window.formspree = window.formspree || function () {
-    (formspree.q = formspree.q || []).push(arguments);
-  };
-</script>
-<script src="https://unpkg.com/@formspree/ajax@1" defer
-        onload="formspree('initForm',{formElement:'#contactForm',formId:'maeolpwa'})"></script>
 
 <script>
 /* ============================================================
-   CONTACT FORM — единая валидация (поля + согласие ПДн)
-   Работает в capture-фазе, чтобы гарантированно сработать
-   раньше Formspree SDK.
+   CONTACT FORM — прямая отправка через fetch (без SDK)
+   Валидация полей + согласие ПДн + отправка на Formspree
    ============================================================ */
-(function contactFormUnified(){
+(function contactFormFetch(){
   'use strict';
   const form = document.getElementById('contactForm');
   if(!form){
@@ -1858,102 +1859,154 @@ if (heroShot) heroShot.addEventListener('click', () => {
     return;
   }
 
-  const nameEl  = form.querySelector('[name="name"]');
-  const emailEl = form.querySelector('[name="email"]');
-  const msgEl   = form.querySelector('[name="message"]');
-  const cb      = form.querySelector('#pd-consent');
-  const err     = form.querySelector('#pd-consent-error');
-  const tsEl    = form.querySelector('#consent-ts');
+  const nameEl      = form.querySelector('[name="name"]');
+  const emailEl     = form.querySelector('[name="email"]');
+  const msgEl       = form.querySelector('[name="message"]');
+  const cb          = form.querySelector('#pd-consent');
+  const err         = form.querySelector('#pd-consent-error');
+  const tsEl        = form.querySelector('#consent-ts');
+  const btn         = form.querySelector('[data-fs-submit-btn]');
+  const success     = form.querySelector('.cf-success');
+  const errorGlobal = form.querySelector('.cf-error-global');
 
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const EMAIL_RE      = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const FORMSPREE_URL = 'https://formspree.io/f/maeolpwa'; // ← твой ID
 
-  /* ---- timestamp согласия пишем В МОМЕНТ клика по чекбоксу ---- */
+  /* ---- timestamp согласия пишем в момент клика по чекбоксу ---- */
   if(cb){
     cb.addEventListener('change', () => {
-  if(cb.checked){
-    if(tsEl) tsEl.value = new Date().toISOString();
-    const ua = document.getElementById('consent-ua');
-    const pg = document.getElementById('consent-page');
-    if(ua) ua.value = navigator.userAgent;
-    if(pg) pg.value = location.href;
-    if(err) err.hidden = true;
-    cb.removeAttribute('aria-invalid');
-  } else {
-    if(tsEl) tsEl.value = '';
-  }
-});
+      if(cb.checked){
+        if(tsEl) tsEl.value = new Date().toISOString();
+        const ua = document.getElementById('consent-ua');
+        const pg = document.getElementById('consent-page');
+        if(ua) ua.value = navigator.userAgent;
+        if(pg) pg.value = location.href;
+        if(err) err.hidden = true;
+        cb.removeAttribute('aria-invalid');
+      } else {
+        if(tsEl) tsEl.value = '';
+      }
+    });
   }
 
-  /* ---- единый обработчик submit (capture) ---- */
-  form.addEventListener('submit', (e) => {
-    // сброс предыдущих ошибок
+  /* ---- сброс ошибок ---- */
+  function clearErrors(){
     [nameEl, emailEl, msgEl].forEach(el => el && el.removeAttribute('aria-invalid'));
     if(cb) cb.removeAttribute('aria-invalid');
     if(err) err.hidden = true;
+    if(errorGlobal) errorGlobal.textContent = '';
+  }
 
-    const nameVal    = nameEl  ? nameEl.value.trim()  : '';
-    const emailVal   = emailEl ? emailEl.value.trim() : '';
-    const msgVal     = msgEl   ? msgEl.value.trim()   : '';
-    const consentVal = cb ? cb.checked : false;
-
+  /* ---- валидация ---- */
+  function validate(){
+    clearErrors();
     let firstBad = null;
 
-    if(!nameVal){
-      if(nameEl) nameEl.setAttribute('aria-invalid','true');
+    if(!nameEl || !nameEl.value.trim()){
+      nameEl?.setAttribute('aria-invalid','true');
       firstBad = firstBad || nameEl;
     }
-    if(!emailVal || !EMAIL_RE.test(emailVal)){
-      if(emailEl) emailEl.setAttribute('aria-invalid','true');
+    if(!emailEl || !EMAIL_RE.test(emailEl.value.trim())){
+      emailEl?.setAttribute('aria-invalid','true');
       firstBad = firstBad || emailEl;
     }
-    if(!msgVal){
-      if(msgEl) msgEl.setAttribute('aria-invalid','true');
+    if(!msgEl || !msgEl.value.trim()){
+      msgEl?.setAttribute('aria-invalid','true');
       firstBad = firstBad || msgEl;
     }
-    if(!consentVal){
+    if(!cb || !cb.checked){
       if(err) err.hidden = false;
-      if(cb)  cb.setAttribute('aria-invalid','true');
+      cb?.setAttribute('aria-invalid','true');
       firstBad = firstBad || cb;
     }
 
     if(firstBad){
-      e.preventDefault();
-      e.stopImmediatePropagation();   // блокируем Formspree SDK
       firstBad.focus();
       firstBad.scrollIntoView({behavior:'smooth', block:'center'});
       return false;
     }
+    return true;
+  }
 
-    // всё ок — фиксируем финальный timestamp (на случай если change не сработал)
-    if(tsEl && consentVal && !tsEl.value){
+  /* ---- отправка ---- */
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // всегда блокируем нативную отправку
+
+    if(!validate()) return;
+
+    // финальный timestamp, если change не сработал
+    if(tsEl && cb?.checked && !tsEl.value){
       tsEl.value = new Date().toISOString();
     }
-  }, true); // ← capture: true
 
-  /* ---- UX после ответа Formspree ---- */
-  const observer = new MutationObserver(() => {
-    const status = form.getAttribute('data-fs-form-status');
+    if(btn) btn.disabled = true;
 
-    if(status === 'success'){
-      form.reset();
-      if(tsEl) tsEl.value = '';           // очищаем timestamp
-      if(cb)   cb.checked = false;
-      form.querySelector('.cf-success')?.scrollIntoView({behavior:'smooth', block:'center'});
+    try {
+      const res = await fetch(FORMSPREE_URL, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
 
-      clearTimeout(form._resetT);
-      form._resetT = setTimeout(() => {
-        form.removeAttribute('data-fs-form-status');
-      }, 8000);
-    }
+      if(res.ok){
+  // очищаем поля и согласие
+  form.reset();
+  if(tsEl) tsEl.value = '';
+  if(cb)   cb.checked = false;
 
-    if(status === 'error'){
-      const bad = form.querySelector('[aria-invalid="true"]');
-      bad?.focus({preventScroll:true});
+  // показываем плашку успеха с плавным появлением
+  if(success){
+    success.setAttribute('data-fs-active','');
+    success.style.display = 'flex';
+    // даём браузеру отрисовать display:flex, затем добавляем класс видимости
+    requestAnimationFrame(() => {
+      success.classList.add('is-visible');
+      success.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+
+    // через 3 секунды — плавно скрываем
+    clearTimeout(form._successTimer);
+    form._successTimer = setTimeout(() => {
+      success.classList.remove('is-visible');
+      success.classList.add('is-hiding');
+
+      // после завершения transition — полностью прячем
+      const onEnd = () => {
+        success.style.display = 'none';
+        success.classList.remove('is-hiding');
+        success.removeAttribute('data-fs-active');
+        success.removeEventListener('transitionend', onEnd);
+      };
+      // сработает либо transitionend, либо fallback-таймер
+      success.addEventListener('transitionend', onEnd, {once:true});
+      setTimeout(onEnd, 500);
+    }, 3000);
+  }
+}
+	  else {
+        const data = await res.json().catch(() => ({}));
+        const msgText = (data?.errors && data.errors.map(e => e.message).join('; '))
+                     || 'Не удалось отправить сообщение. Попробуйте позже.';
+        if(errorGlobal) errorGlobal.textContent = msgText;
+      }
+    } catch (netErr){
+      if(errorGlobal) errorGlobal.textContent = 'Ошибка сети. Проверьте подключение и попробуйте снова.';
+    } finally {
+      if(btn) btn.disabled = false;
     }
   });
-  observer.observe(form, {attributes:true, attributeFilter:['data-fs-form-status']});
+
+  /* при новом вводе — сразу прячем плашку, если она ещё висит */
+form.addEventListener('input', () => {
+  if(!success) return;
+  clearTimeout(form._successTimer);
+  success.classList.remove('is-visible','is-hiding');
+  success.style.display = 'none';
+  success.removeAttribute('data-fs-active');
+});
 })();
 </script>
+
 <script>
 /* ============================================================
    VERSION SYNC — единый источник версии.
